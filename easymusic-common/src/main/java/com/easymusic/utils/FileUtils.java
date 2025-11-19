@@ -14,7 +14,7 @@ import java.io.File;
  * * @date 2025/11/19 15:27:15
  */
 
-@Component("/fileUtils")
+@Component("fileUtils")
 @Slf4j
 public class FileUtils {
 
@@ -24,7 +24,7 @@ public class FileUtils {
     public String copyAvatar(String userId) {
 
         try {
-            int random = (int) (Math.random() * 2) + 1;
+            int random = (int) (Math.random() * Constants.AVATAR_LEN) + 1;
             String avatarFolderPath = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + Constants.FILE_FOLDER_AVATAR_NAME;
             File folder = new File(avatarFolderPath);
             if (!folder.exists()) {

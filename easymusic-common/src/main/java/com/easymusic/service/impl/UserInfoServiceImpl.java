@@ -1,6 +1,7 @@
 package com.easymusic.service.impl;
 
 import com.easymusic.entity.constants.Constants;
+import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.enums.PageSize;
 import com.easymusic.entity.enums.UserStatusEnum;
 import com.easymusic.entity.po.UserInfo;
@@ -9,7 +10,9 @@ import com.easymusic.entity.query.UserInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.exception.BusinessException;
 import com.easymusic.mappers.UserInfoMapper;
+import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.UserInfoService;
+import com.easymusic.utils.CopyTools;
 import com.easymusic.utils.FileUtils;
 import com.easymusic.utils.StringTools;
 import jakarta.annotation.Resource;
@@ -30,6 +33,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Resource
     private FileUtils fileUtils;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     /**
      * 根据条件查询列表
@@ -178,5 +184,30 @@ public class UserInfoServiceImpl implements UserInfoService {
         String avatar = fileUtils.copyAvatar(userId);
         userInfo.setAvatar(avatar);
         userInfoMapper.insert(userInfo);
+    }
+
+    @Override
+    public TokenUserInfoDTO login(String email, String password) {
+        UserInfo userInfo = userInfoMapper.selectByEmail(email);
+        if (userInfo == null || !userInfo.getPassword().equals(password)) {
+            throw new BusinessException("邮箱账号已经存在!");
+        }
+        if (UserStatusEnum.DISABLE.getStatus().equals(userInfo.getStatus())) {
+            throw new BusinessException("用户已被禁用!");
+        }
+
+        // 更新登录时间
+        UserInfo updateInfo = new UserInfo();
+        updateInfo.setLastLoginTime(new Date());
+        userInfoMapper.updateByUserId(updateInfo, userInfo.getUserId());
+
+        // 生成token
+        TokenUserInfoDTO tokenUserInfoDTO = CopyTools.copy(userInfo, TokenUserInfoDTO.class);
+        String token = StringTools.encodeByMD5(tokenUserInfoDTO.getUserId() + StringTools.getRandomNumber(Constants.LENGTH_20));
+        tokenUserInfoDTO.setToken(token);
+        // 保存到redis
+        redisComponent.saveUserTokenInfoDto(tokenUserInfoDTO);
+
+        return tokenUserInfoDTO;
     }
 }

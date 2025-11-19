@@ -1,6 +1,7 @@
 package com.easymusic.redis;
 
 import com.easymusic.entity.constants.Constants;
+import com.easymusic.entity.dto.TokenUserInfoDTO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -30,4 +31,10 @@ public class RedisComponent {
         redisUtils.delete(Constants.REDIS_KEY_CHECK_CODE + checkCodeKey);
     }
 
+    // 保存token到redis 7天过期
+    public void saveUserTokenInfoDto(TokenUserInfoDTO tokenUserInfoDTO) {
+        redisUtils.setex(Constants.REDIS_KEY_TOKEN_WEB_USER + tokenUserInfoDTO.getToken(),
+                tokenUserInfoDTO,
+                Constants.REDIS_KEY_EXPIRES_ONE_DAY * 7);
+    }
 }

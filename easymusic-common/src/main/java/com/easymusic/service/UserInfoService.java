@@ -1,10 +1,11 @@
 package com.easymusic.service;
 
-import java.util.List;
-
-import com.easymusic.entity.query.UserInfoQuery;
+import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.po.UserInfo;
+import com.easymusic.entity.query.UserInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+
+import java.util.List;
 
 
 /**
@@ -88,4 +89,6 @@ public interface UserInfoService {
 	Integer deleteUserInfoByEmail(String email);
 
 	void register(String email, String password, String nickName);
+
+    TokenUserInfoDTO login(String email, String password);
 }

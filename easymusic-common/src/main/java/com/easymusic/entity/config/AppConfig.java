@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
 
-    private String projectFolder;
     @Value("${project.folder:}")
+    private String projectFolder;
 
     public String getProjectFolder() {
         return projectFolder;

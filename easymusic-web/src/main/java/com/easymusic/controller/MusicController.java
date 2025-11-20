@@ -72,4 +72,10 @@ public class MusicController extends ABaseController {
         MusicInfo res = musicInfoService.getMusicInfoByMusicId(musicId);
         return getSuccessResponseVO(res);
     }
+
+    @RequestMapping("/updatePlayCount")
+    public ResponseVO updatePlayCount(@NotEmpty String musicId) {
+        musicInfoService.updatePlayCount(musicId);
+        return getSuccessResponseVO(null);
+    }
 }

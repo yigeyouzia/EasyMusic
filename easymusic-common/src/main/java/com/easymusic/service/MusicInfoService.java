@@ -1,10 +1,10 @@
 package com.easymusic.service;
 
-import java.util.List;
-
-import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.po.MusicInfo;
+import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+
+import java.util.List;
 
 
 /**
@@ -87,4 +87,5 @@ public interface MusicInfoService {
 	 */
 	Integer deleteMusicInfoByTaskId(String taskId);
 
+	void updatePlayCount(String musicId);
 }

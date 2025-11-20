@@ -1,19 +1,20 @@
 package com.easymusic.service.impl;
 
-import java.util.List;
-
-import jakarta.annotation.Resource;
-
-import org.springframework.stereotype.Service;
-
 import com.easymusic.entity.enums.PageSize;
-import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.po.MusicInfo;
-import com.easymusic.entity.vo.PaginationResultVO;
+import com.easymusic.entity.po.UserInfo;
+import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.query.SimplePage;
+import com.easymusic.entity.query.UserInfoQuery;
+import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.mappers.MusicInfoMapper;
+import com.easymusic.mappers.UserInfoMapper;
 import com.easymusic.service.MusicInfoService;
 import com.easymusic.utils.StringTools;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 /**
@@ -24,6 +25,9 @@ public class MusicInfoServiceImpl implements MusicInfoService {
 
 	@Resource
 	private MusicInfoMapper<MusicInfo, MusicInfoQuery> musicInfoMapper;
+
+	@Resource
+	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
 
 	/**
 	 * 根据条件查询列表
@@ -109,7 +113,12 @@ public class MusicInfoServiceImpl implements MusicInfoService {
 	 */
 	@Override
 	public MusicInfo getMusicInfoByMusicId(String musicId) {
-		return this.musicInfoMapper.selectByMusicId(musicId);
+		MusicInfo musicInfo = musicInfoMapper.selectByMusicId(musicId);
+		if (musicInfo != null) {
+			UserInfo userInfo = userInfoMapper.selectByUserId(musicInfo.getUserId());
+			musicInfo.setNickName(userInfo.getNickName());
+		}
+		return musicInfo;
 	}
 
 	/**
@@ -150,5 +159,10 @@ public class MusicInfoServiceImpl implements MusicInfoService {
 	@Override
 	public Integer deleteMusicInfoByTaskId(String taskId) {
 		return this.musicInfoMapper.deleteByTaskId(taskId);
+	}
+
+	@Override
+	public void updatePlayCount(String musicId) {
+		musicInfoMapper.updateMusicCount(musicId);
 	}
 }

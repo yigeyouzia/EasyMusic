@@ -43,4 +43,5 @@ public interface MusicInfoMapper<T,P> extends BaseMapper<T,P> {
 	 T selectByTaskId(@Param("taskId") String taskId);
 
 
+    void updateMusicCount(@Param("musicId") String musicId);
 }

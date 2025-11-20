@@ -1,10 +1,21 @@
 package com.easymusic.controller;
+
+import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.enums.ResponseCodeEnum;
 import com.easymusic.entity.vo.ResponseVO;
 import com.easymusic.exception.BusinessException;
+import com.easymusic.redis.RedisComponent;
+import com.easymusic.utils.StringTools;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 
 public class ABaseController {
+
+    @Resource
+    private RedisComponent redisComponent;
 
     protected static final String STATUC_SUCCESS = "success";
 
@@ -39,5 +50,20 @@ public class ABaseController {
         vo.setInfo(ResponseCodeEnum.CODE_500.getMsg());
         vo.setData(t);
         return vo;
+    }
+
+    protected TokenUserInfoDTO getTokenUserInfo(String token) {
+        // 从请求头中获取token的字段
+        if (StringTools.isEmpty(token)) {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            token = request.getHeader("token");
+        }
+        // 没有携带token 直接返回null
+        if (StringTools.isEmpty(token)) {
+            return null;
+        }
+        // 从redis中获取用户信息
+        TokenUserInfoDTO tokenUserInfoDTO = redisComponent.getUserTokenInfoDto(token);
+        return tokenUserInfoDTO;
     }
 }

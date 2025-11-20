@@ -25,6 +25,7 @@ public class Constants {
 
     public static final String DEFAULT_AVATAR_PATH = "/avatar/%d.jpg";
 
+    public static final String[] IMAGES_SUFFIX = {".jpg", ".png", ".jpeg", ".gif", ".bmp", ".svg", ".webp", ".ico"};
 
 
     /**

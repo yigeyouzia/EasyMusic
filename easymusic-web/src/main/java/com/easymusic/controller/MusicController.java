@@ -9,6 +9,7 @@ import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.entity.vo.ResponseVO;
 import com.easymusic.service.MusicInfoService;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,6 +64,12 @@ public class MusicController extends ABaseController {
         }
         query.setPageNo(pageNo);
         PaginationResultVO<MusicInfo> res = musicInfoService.findListByPage(query);
+        return getSuccessResponseVO(res);
+    }
+
+    @RequestMapping("/musicDetail")
+    public ResponseVO loadLatestMusic(@NotEmpty String musicId) {
+        MusicInfo res = musicInfoService.getMusicInfoByMusicId(musicId);
         return getSuccessResponseVO(res);
     }
 }

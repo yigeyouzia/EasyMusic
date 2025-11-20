@@ -1,11 +1,11 @@
 package com.easymusic.utils;
+
 import com.easymusic.exception.BusinessException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Random;
 
 
 public class StringTools {
@@ -57,11 +57,27 @@ public class StringTools {
 
     // user的id生成器
     public static String getRandomNumber(int length) {
-        return RandomStringUtils.random(length, false,  true);
+        return RandomStringUtils.random(length, false, true);
     }
 
     // md5加密
     public static String encodeByMD5(String str) {
         return StringTools.isEmpty(str) ? "" : DigestUtils.md5Hex(str);
+    }
+
+    // 获取文件后缀名
+    public static String getFileSuffix(String fileName) {
+        return fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    // 判断路径是否合法
+    public static boolean pathIsOk(String filePath) {
+        if (StringTools.isEmpty(filePath)) {
+            return true;
+        }
+        if (filePath.contains("../") || filePath.contains("..\\")) {
+            return false;
+        }
+        return true;
     }
 }

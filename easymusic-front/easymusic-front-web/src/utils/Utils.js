@@ -1,6 +1,6 @@
 import moment from "moment";
 const imageModules = import.meta.glob('@/assets/*/*.{png,jpg,jpeg,svg,mp4,gif}', {
-    eager: true
+            eager: true
 });
 
 moment.locale('zh-cn', {

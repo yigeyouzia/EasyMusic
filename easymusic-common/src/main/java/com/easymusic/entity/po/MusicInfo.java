@@ -1,13 +1,12 @@
 package com.easymusic.entity.po;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Date;
 import com.easymusic.entity.enums.DateTimePatternEnum;
 import com.easymusic.utils.DateUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.Date;
 
 
 /**
@@ -75,6 +74,30 @@ public class MusicInfo implements Serializable {
 	 * 0:未推荐 1:已推荐
 	 */
 	private Integer commendType;
+
+	/**
+	 * 创作人  添加信息
+	 */
+
+	private String avatar;
+
+	private String nickName;
+
+	public String getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
+	}
+
+	public String getNickName() {
+		return nickName;
+	}
+
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
 
 	/**
 	 * 创建时间

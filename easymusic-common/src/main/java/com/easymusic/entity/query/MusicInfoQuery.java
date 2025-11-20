@@ -1,8 +1,5 @@
 package com.easymusic.entity.query;
 
-import java.util.Date;
-
-
 /**
  * 音乐信息参数
  */
@@ -104,6 +101,16 @@ public class MusicInfoQuery extends BaseParam {
 	 */
 	private Integer musicType;
 
+	// 是否查询人
+	private Boolean queryUser;
+
+	public Boolean getQueryUser() {
+		return queryUser;
+	}
+
+	public void setQueryUser(Boolean queryUser) {
+		this.queryUser = queryUser;
+	}
 
 	public void setMusicId(String musicId){
 		this.musicId = musicId;

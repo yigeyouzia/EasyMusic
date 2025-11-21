@@ -1,10 +1,10 @@
 package com.easymusic.service;
 
-import java.util.List;
-
-import com.easymusic.entity.query.MusicInfoActionQuery;
 import com.easymusic.entity.po.MusicInfoAction;
+import com.easymusic.entity.query.MusicInfoActionQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+
+import java.util.List;
 
 
 /**
@@ -87,4 +87,5 @@ public interface MusicInfoActionService {
 	 */
 	Integer deleteMusicInfoActionByMusicIdAndUserId(String musicId,String userId);
 
+    void doGood(String musicId, String userId);
 }

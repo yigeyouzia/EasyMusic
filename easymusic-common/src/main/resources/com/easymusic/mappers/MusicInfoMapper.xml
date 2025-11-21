@@ -138,6 +138,12 @@
         <if test="query.queryUser">
             ,u.nick_name, u.avatar
         </if>
+        <if test="query.currentUserId!=null">
+            ,(select exists
+            (select 1 from music_info_action mia where mia.music_id = m.music_id and mia.user_id = #{query.currentUserId}))
+            as doGood
+
+        </if>
         FROM music_info m
         <if test="query.queryUser">
             left join user_info u on m.user_id = u.user_id

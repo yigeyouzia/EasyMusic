@@ -104,6 +104,17 @@ public class MusicInfoQuery extends BaseParam {
 	// 是否查询人
 	private Boolean queryUser;
 
+	// 当前用户ID 是否点过赞
+	private String currentUserId;
+
+	public String getCurrentUserId() {
+		return currentUserId;
+	}
+
+	public void setCurrentUserId(String currentUserId) {
+		this.currentUserId = currentUserId;
+	}
+
 	public Boolean getQueryUser() {
 		return queryUser;
 	}

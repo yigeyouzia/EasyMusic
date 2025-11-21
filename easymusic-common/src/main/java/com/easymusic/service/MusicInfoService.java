@@ -87,5 +87,5 @@ public interface MusicInfoService {
 	 */
 	Integer deleteMusicInfoByTaskId(String taskId);
 
-	void updatePlayCount(String musicId);
+	void updateMusicCount(String musicId);
 }

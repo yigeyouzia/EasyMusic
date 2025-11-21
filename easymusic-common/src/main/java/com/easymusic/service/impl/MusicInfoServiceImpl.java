@@ -162,7 +162,7 @@ public class MusicInfoServiceImpl implements MusicInfoService {
 	}
 
 	@Override
-	public void updatePlayCount(String musicId) {
+	public void updateMusicCount(String musicId) {
 		musicInfoMapper.updateMusicCount(musicId);
 	}
 }

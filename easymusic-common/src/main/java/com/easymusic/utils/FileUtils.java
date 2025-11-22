@@ -2,12 +2,15 @@ package com.easymusic.utils;
 
 import com.easymusic.entity.config.AppConfig;
 import com.easymusic.entity.constants.Constants;
+import com.easymusic.entity.enums.DateTimePatternEnum;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.Date;
 
 /**
  * @author cyt
@@ -20,6 +23,34 @@ public class FileUtils {
 
     @Resource
     private AppConfig appConfig;
+
+    public String uploadFile(MultipartFile file, String folderName, String fileName) {
+        if (StringTools.isEmpty(folderName)) {
+            folderName = DateUtil.format(new Date(), DateTimePatternEnum.YYYYMM.getPattern()) + "/";
+        }
+        String folderPath = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + folderName;
+        // 如果文件夹不存在，则创建
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+
+        // 文件路径
+        if (StringTools.isEmpty(fileName)) {
+            fileName = System.currentTimeMillis() + StringTools.getFileSuffix(file.getOriginalFilename());
+        }
+
+        try {
+            // 保存文件
+            file.transferTo(new File(folderPath, fileName));
+            log.info("上传文件成功! 文件路径：{}， => 文件名：{}", folderPath, fileName);
+
+        } catch (Exception e) {
+            log.error("上传文件失败：{}", e);
+        }
+
+        return folderName + fileName;
+    }
 
     public String copyAvatar(String userId) {
 

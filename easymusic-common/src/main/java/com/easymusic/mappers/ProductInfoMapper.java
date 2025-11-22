@@ -1,6 +1,9 @@
 package com.easymusic.mappers;
 
+import com.easymusic.entity.po.ProductInfo;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 商品信息 数据库操作接口
@@ -25,4 +28,5 @@ public interface ProductInfoMapper<T,P> extends BaseMapper<T,P> {
 	 T selectByProductId(@Param("productId") String productId);
 
 
+    void changeProductSort(@Param("productInfoList")List<ProductInfo> productInfoList);
 }

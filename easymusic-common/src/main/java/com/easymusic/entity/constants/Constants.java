@@ -8,6 +8,8 @@ public class Constants {
 
     public static final String REDIS_KEY_PREFIX = "easymusic:";
 
+    public static final Integer LENGTH_5 = 5;
+
     public static final Integer LENGTH_12 = 12;
 
     public static final Integer LENGTH_20 = 20;

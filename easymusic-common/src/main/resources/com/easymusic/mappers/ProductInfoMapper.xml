@@ -398,7 +398,7 @@
  		 where product_id=#{productId}
 	</update>
 
-	<!-- 根据ProductId删除-->
+    <!-- 根据ProductId删除-->
 	<delete id="deleteByProductId">
 		delete from product_info where product_id=#{productId}
 	</delete>
@@ -407,5 +407,13 @@
 	<select id="selectByProductId" resultMap="base_result_map" >
 		select <include refid="base_column_list" /> from product_info p where product_id=#{productId}
 	</select>
+
+	<!--修改商品排序-->
+	<update id="changeProductSort">
+        <foreach collection="productInfoList" item="item" separator=";">
+            update product_info set sort=#{item.sort} where product_id=#{item.productId}
+        </foreach>
+    </update>
+
 
 </mapper>

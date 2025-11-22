@@ -33,7 +33,8 @@ const loadProduct = async () => {
   if (!result) {
     return
   }
-  productList.value = result.data
+  // productList.value = result.data
+  productList.value = result.data.list
 }
 
 const productEditRef = ref()

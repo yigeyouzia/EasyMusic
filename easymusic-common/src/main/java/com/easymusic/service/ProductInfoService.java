@@ -3,6 +3,7 @@ package com.easymusic.service;
 import com.easymusic.entity.po.ProductInfo;
 import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -69,4 +70,7 @@ public interface ProductInfoService {
 	 */
 	Integer deleteProductInfoByProductId(String productId);
 
+	void saveProduct(MultipartFile coverFile, ProductInfo productInfo);
+
+	void changeProductSort(String productIds);
 }

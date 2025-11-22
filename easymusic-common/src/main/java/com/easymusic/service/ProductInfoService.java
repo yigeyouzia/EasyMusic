@@ -1,10 +1,10 @@
 package com.easymusic.service;
 
-import java.util.List;
-
-import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.po.ProductInfo;
+import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+
+import java.util.List;
 
 
 /**

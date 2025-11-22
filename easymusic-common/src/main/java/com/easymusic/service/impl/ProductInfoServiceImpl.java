@@ -1,19 +1,17 @@
 package com.easymusic.service.impl;
 
-import java.util.List;
-
-import jakarta.annotation.Resource;
-
-import org.springframework.stereotype.Service;
-
 import com.easymusic.entity.enums.PageSize;
-import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.po.ProductInfo;
-import com.easymusic.entity.vo.PaginationResultVO;
+import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.query.SimplePage;
+import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.mappers.ProductInfoMapper;
 import com.easymusic.service.ProductInfoService;
 import com.easymusic.utils.StringTools;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 /**

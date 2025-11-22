@@ -12,6 +12,8 @@ public class Constants {
 
     public static final Integer LENGTH_20 = 20;
 
+    public static final Integer LENGTH_30 = 30;
+
     /**
      * file
      */
@@ -40,6 +42,7 @@ public class Constants {
     // token
     public static final String REDIS_KEY_TOKEN_WEB_USER = REDIS_KEY_PREFIX + "token:";
 
-    public static final Long REDIS_KEY_EXPIRES_ONE_DAY = REDIS_KEY_EXPIRES_ONE_MIN * 60 * 24;
+    public static final String REDIS_KEY_TOKEN_ADMIN_USER = REDIS_KEY_PREFIX + "token:admin:";
 
+    public static final Long REDIS_KEY_EXPIRES_ONE_DAY = REDIS_KEY_EXPIRES_ONE_MIN * 60 * 24;
 }

@@ -1,6 +1,7 @@
 package com.easymusic.redis;
 
 import com.easymusic.entity.constants.Constants;
+import com.easymusic.entity.dto.TokenUserInfo4AdminDTO;
 import com.easymusic.entity.dto.TokenUserInfoDTO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
@@ -45,4 +46,25 @@ public class RedisComponent {
     public TokenUserInfoDTO getUserTokenInfoDto(String token) {
         return (TokenUserInfoDTO) redisUtils.get(Constants.REDIS_KEY_TOKEN_WEB_USER + token);
     }
+
+    // admin *********************************************************
+    /**
+     * 保存管理员token到redis 7天过期
+     * @param adminDTO
+     */
+    public void saveTokenUserInfo4Admin(TokenUserInfo4AdminDTO adminDTO) {
+        redisUtils.setex(Constants.REDIS_KEY_TOKEN_ADMIN_USER + adminDTO.getToken(),
+                adminDTO,
+                Constants.REDIS_KEY_EXPIRES_ONE_DAY * 7);
+    }
+
+    public TokenUserInfo4AdminDTO getTokenUserInfo4Admin(String token) {
+        return (TokenUserInfo4AdminDTO) redisUtils.get(Constants.REDIS_KEY_TOKEN_ADMIN_USER + token);
+    }
+
+    // 清除token
+    public void cleanTokenUserInfo4Admin(String token) {
+        redisUtils.delete(Constants.REDIS_KEY_TOKEN_ADMIN_USER + token);
+    }
+
 }

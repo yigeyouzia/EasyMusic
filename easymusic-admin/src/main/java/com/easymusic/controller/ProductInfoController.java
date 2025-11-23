@@ -2,7 +2,6 @@ package com.easymusic.controller;
 
 import com.easymusic.entity.po.ProductInfo;
 import com.easymusic.entity.query.ProductInfoQuery;
-import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.entity.vo.ResponseVO;
 import com.easymusic.service.ProductInfoService;
 import jakarta.annotation.Resource;
@@ -12,6 +11,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * 用户信息 Controller
@@ -29,7 +30,7 @@ public class ProductInfoController extends ABaseController {
     public ResponseVO loadProduct() {
         ProductInfoQuery query = new ProductInfoQuery();
         query.setOrderBy("p.sort asc");
-        PaginationResultVO<ProductInfo> res = productInfoService.findListByPage(query);
+        List<ProductInfo> res = productInfoService.findListByParam(query);
         return getSuccessResponseVO(res);
     }
 

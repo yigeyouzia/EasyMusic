@@ -47,6 +47,10 @@ public class RedisComponent {
         return (TokenUserInfoDTO) redisUtils.get(Constants.REDIS_KEY_TOKEN_WEB_USER + token);
     }
 
+    public void cleanTokenUserInfo4Web(String token) {
+        redisUtils.delete(Constants.REDIS_KEY_TOKEN_WEB_USER + token);
+    }
+
     // admin *********************************************************
     /**
      * 保存管理员token到redis 7天过期

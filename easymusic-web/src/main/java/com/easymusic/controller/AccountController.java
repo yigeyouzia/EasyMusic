@@ -95,4 +95,14 @@ public class AccountController extends ABaseController {
         return getSuccessResponseVO(res);
     }
 
+    @RequestMapping("/logout")
+    public ResponseVO logout() {
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        if (tokenUserInfo == null) {
+            return  getSuccessResponseVO(null);
+        }
+        redisComponent.cleanTokenUserInfo4Web(tokenUserInfo.getToken());
+        return getSuccessResponseVO(null);
+    }
+
 }

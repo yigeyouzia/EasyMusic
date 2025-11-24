@@ -5,6 +5,7 @@ package com.easymusic.service.impl;
  * * @date 2025/11/24 17:08:08
  */
 
+import com.alibaba.fastjson2.JSONPath;
 import com.easymusic.entity.config.AppConfig;
 import com.easymusic.entity.constants.Constants;
 import com.easymusic.entity.dto.PayOrderNotifyDTO;
@@ -103,6 +104,16 @@ public class PayChannel4WechatImpl implements PayChannelService {
         return codeUrl;
     }
 
+    /**
+     * 查询订单
+     * curl -X GET \
+     * https://api.mch.weixin.qq.com/v3/pay/transactions/out-trade-no/1217752501201407033233368018?mchid=1230000109 \
+     * -H "Authorization: WECHATPAY2-SHA256-RSA2048 mchid=\"1900000001\",..." \
+     * -H "Accept: application/json"
+     *
+     * @param orderId
+     * @return
+     */
     @Override
     public PayOrderNotifyDTO queryOrder(String orderId) {
         String mchId = appConfig.getPayWechatMchid();
@@ -118,17 +129,37 @@ public class PayChannel4WechatImpl implements PayChannelService {
         String response = OKHttpUtils.getRequest(url, headerMap);
         Map<String, Object> bodyInfoMap = JsonUtils.convertJson2Obj(response, Map.class);
         //判断状态
+//        if (!RETURN_CODE_SUCCESS.equals(bodyInfoMap.get("trade_state"))) {
+//            return null;
+//        }
+//        // 微信支付id
+//        String channelOrderId = String.valueOf(bodyInfoMap.get("transaction_id"));
+//        PayOrderNotifyDTO payOrderNotifyDto = new PayOrderNotifyDTO();
+//        payOrderNotifyDto.setChannelOrderId(channelOrderId);
+//        payOrderNotifyDto.setOrderId(orderId);
+
+
+        // 法二获取josn， JSONPath解决多层级嵌套
+        String tradeState = (String) JSONPath.eval(response, "$.amount.total");
         if (!RETURN_CODE_SUCCESS.equals(bodyInfoMap.get("trade_state"))) {
             return null;
         }
-        // 微信支付id
-        String channelOrderId = String.valueOf(bodyInfoMap.get("transaction_id"));
+        String channelOrderId = String.valueOf(bodyInfoMap.get("$.transaction_id"));
         PayOrderNotifyDTO payOrderNotifyDto = new PayOrderNotifyDTO();
         payOrderNotifyDto.setChannelOrderId(channelOrderId);
         payOrderNotifyDto.setOrderId(orderId);
+
         return payOrderNotifyDto;
     }
 
+    /**
+     * 解密微信回调信息
+     * 验签
+     *
+     * @param params
+     * @param jsonBody
+     * @return EasyMusic订单id和微信id
+     */
     @Override
     public PayOrderNotifyDTO checkPayNotify(Map<String, Object> params, String jsonBody) {
         String wechatpayTimestamp = (String) params.get("wechatpayTimestamp");

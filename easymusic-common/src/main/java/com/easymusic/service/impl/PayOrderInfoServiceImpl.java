@@ -1,5 +1,6 @@
 package com.easymusic.service.impl;
 
+import com.easymusic.entity.config.AppConfig;
 import com.easymusic.entity.constants.Constants;
 import com.easymusic.entity.dto.PayInfoDTO;
 import com.easymusic.entity.dto.PayOrderNotifyDTO;
@@ -19,6 +20,7 @@ import com.easymusic.service.PayOrderInfoService;
 import com.easymusic.spring.SpringContext;
 import com.easymusic.utils.DateUtil;
 import com.easymusic.utils.StringTools;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,9 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
 
     @Resource
     private ProductInfoMapper<ProductInfo, ProductInfoQuery> productInfoMapper;
+
+    @Resource
+    private AppConfig appConfig;
 
     /**
      * 根据条件查询列表
@@ -221,4 +226,43 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         // TODO 更新用户积分
 
     }
+
+    @PostConstruct
+    public void checkPayOrder() {
+        if (!appConfig.getAutoCheckPay()) {
+            return;
+        }
+
+        ExecutorServiceSingletonEnum.INSTANCE.getExecutorService().execute(() -> {
+            // 查询未支付订单
+            while (true) {
+                try {
+                    PayOrderInfoQuery query = new PayOrderInfoQuery();
+                    query.setStatus(PayOrderStatusEnum.NO_PAY.getStatus());
+                    List<PayOrderInfo> payOrderInfoList = payOrderInfoMapper.selectList(query);
+                    for (PayOrderInfo payOrderInfo : payOrderInfoList) {
+                        // 调用支付渠道接口
+                        PayOrderTypeEnum payOrderTypeEnum = PayOrderTypeEnum.getByType(payOrderInfo.getPayType());
+                        String beanName = payOrderTypeEnum.getBeanName();
+                        PayChannelService payChannelService = (PayChannelService) SpringContext.getBean(beanName);
+                        PayOrderNotifyDTO payOrderNotifyDTO = payChannelService.queryOrder(payOrderInfo.getOrderId());
+                        // 支付没有支付订单id
+                        if (payOrderNotifyDTO.getChannelOrderId() == null) {
+                            continue;
+                        }
+                        // TODO 更新用户积分
+                        Thread.sleep(10000);
+                    }
+                } catch (Exception e) {
+                    log.error("查询未支付订单失败", e);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        log.error("休眠失败", ex);
+                    }
+                }
+            }
+        });
+    }
+
 }

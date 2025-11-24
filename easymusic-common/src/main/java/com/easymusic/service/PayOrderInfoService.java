@@ -7,6 +7,7 @@ import com.easymusic.entity.query.PayOrderInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -80,5 +81,14 @@ public interface PayOrderInfoService {
      * @return
      */
     PayInfoDTO getPayInfo(TokenUserInfoDTO tokenUserInfoDTO, String productId, Integer payType);
+
+    /**
+     * 支付回调 验签 成功后 操作数据库
+     *
+     * @param payType 支付方式
+     * @param params
+     * @param body
+     */
+    void payNotify(Integer payType, Map<String, Object> params, String body);
 
 }

@@ -121,6 +121,7 @@ public class PayChannel4WechatImpl implements PayChannelService {
         if (!RETURN_CODE_SUCCESS.equals(bodyInfoMap.get("trade_state"))) {
             return null;
         }
+        // 微信支付id
         String channelOrderId = String.valueOf(bodyInfoMap.get("transaction_id"));
         PayOrderNotifyDTO payOrderNotifyDto = new PayOrderNotifyDTO();
         payOrderNotifyDto.setChannelOrderId(channelOrderId);
@@ -144,9 +145,11 @@ public class PayChannel4WechatImpl implements PayChannelService {
         String associatedData = dataMap.get("associated_data");
         String nonce = dataMap.get("nonce");
         String ciphertext = dataMap.get("ciphertext");
+        // 解密信息
         String bodyInfo = decryptResponseBody(apiV3Key, associatedData, nonce, ciphertext);
         log.info("微信回调V3解密后的结果为:{}", bodyInfo);
         String mySign = wechatpayTimestamp + "\n" + wechatpayNonce + "\n" + jsonBody + "\n";
+        //  验证签名
         Boolean verifyResult = verifySign(mchNo, serialNo, apiclientKeyPath, apiV3Key, wechatpaySignature, mySign);
         log.info("验证结果:{}", verifyResult);
         if (!verifyResult) {
@@ -257,6 +260,18 @@ public class PayChannel4WechatImpl implements PayChannelService {
         }
     }
 
+    /**
+     * 验证签名
+     *
+     * @param mchId
+     * @param serialNo
+     * @param keyPath
+     * @param apiV3Key
+     * @param wechatpaySignature
+     * @param mySign
+     * @return
+     * @throws BusinessException
+     */
     private Boolean verifySign(String mchId, String serialNo, String keyPath, String apiV3Key, String wechatpaySignature, String mySign) throws BusinessException {
         List<Certificate> certificateList = getCertificate(mchId, serialNo, keyPath, apiV3Key);
         Integer index = 0;

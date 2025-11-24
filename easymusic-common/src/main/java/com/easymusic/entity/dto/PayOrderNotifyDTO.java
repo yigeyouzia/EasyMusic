@@ -6,11 +6,11 @@ package com.easymusic.entity.dto;
  */
 public class PayOrderNotifyDTO {
     /**
-     * 订单号
+     * 订单号 easyMusic订单号
      */
     private String orderId;
     /**
-     * 支付订单号 通道订单号
+     * 支付订单号 通道订单号 微信订单号
      */
     private String channelOrderId;
 

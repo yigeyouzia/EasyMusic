@@ -203,7 +203,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
         // 生成token
         TokenUserInfoDTO tokenUserInfoDTO = CopyTools.copy(userInfo, TokenUserInfoDTO.class);
-        String token = StringTools.encodeByMD5(tokenUserInfoDTO.getUserId() + StringTools.getRandomNumber(Constants.LENGTH_20));
+        String token = StringTools.encodeByMD5(tokenUserInfoDTO.getUserId() + StringTools.getRandomString(Constants.LENGTH_20));
         tokenUserInfoDTO.setToken(token);
         // 保存到redis
         redisComponent.saveUserTokenInfoDto(tokenUserInfoDTO);

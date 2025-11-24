@@ -20,4 +20,6 @@ public class EasyMusicWebApplication {
     public static void main(String[] args) {
         SpringApplication.run(EasyMusicWebApplication.class, args);
     }
+
+
 }

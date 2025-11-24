@@ -51,4 +51,10 @@ public class Constants {
 
     public static final Long REDIS_KEY_EXPIRES_ONE_DAY = REDIS_KEY_EXPIRES_ONE_MIN * 60 * 24;
 
+    /**
+     * pay 支付相关
+     */
+    // 微信支付二维码请求失效时间
+    public static final Integer ORDER_TIMEOUT_MIN = 10;
+
 }

@@ -12,7 +12,8 @@ import java.util.Optional;
 public enum PayOrderTypeEnum {
 
     PAY_CODE(0, "", "付款码支付"),
-    ON_SALE(1, "payChannel4Wechat", "微信支付");
+    PAY_WECHAT(1, "payChannel4Wechat", "微信支付"),
+    PAY_ALIPAY(2, "payChannel4Alipay", "支付宝支付");
 
 
     private Integer type;
@@ -21,7 +22,7 @@ public enum PayOrderTypeEnum {
 
     PayOrderTypeEnum(Integer status, String beanName, String desc) {
         this.type = status;
-        this.beanName = desc;
+        this.beanName = beanName;
         this.desc = desc;
     }
 

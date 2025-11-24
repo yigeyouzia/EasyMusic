@@ -13,7 +13,9 @@ import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.exception.BusinessException;
 import com.easymusic.mappers.PayOrderInfoMapper;
 import com.easymusic.mappers.ProductInfoMapper;
+import com.easymusic.service.PayChannelService;
 import com.easymusic.service.PayOrderInfoService;
+import com.easymusic.spring.SpringContext;
 import com.easymusic.utils.DateUtil;
 import com.easymusic.utils.JsonUtils;
 import com.easymusic.utils.OKHttpUtils;
@@ -176,8 +178,8 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         }
 
         // 校验支付方式
-        PayOrderTypeEnum payOrderType = PayOrderTypeEnum.getByType(payType);
-        if (payOrderType == null || PayOrderTypeEnum.PAY_CODE == payOrderType) {
+        PayOrderTypeEnum payOrderTypeEnum = PayOrderTypeEnum.getByType(payType);
+        if (payOrderTypeEnum == null || PayOrderTypeEnum.PAY_CODE == payOrderTypeEnum) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
 
@@ -185,8 +187,10 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         String orderId = getOrderId();
         PayOrderInfo payOrderInfo = new PayOrderInfo();
         // TODO 调用微信支付 先调微信 再选择入库（具体看业务场景）
-        String payUrl = getPayUrl(orderId, productInfo.getPrice(), productInfo.getProductName());
+        String beanName = payOrderTypeEnum.getBeanName();
+        PayChannelService payChannelService = (PayChannelService)SpringContext.getBean(beanName);
 
+        String payUrl = payChannelService.getPayUrl(orderId, productInfo.getPrice(), productInfo.getProductName());
         payOrderInfo.setOrderId(orderId);
         payOrderInfo.setCreateTime(new Date());
         productInfo.setIntegral(productInfo.getIntegral()); // 积分

@@ -5,7 +5,8 @@ public enum DateTimePatternEnum {
     YYYY_MM_DD_HH_MM_SS("yyyy-MM-dd HH:mm:ss"),
     YYYYMMDDHHMMSS("yyyyMMddHHmmss"),
     YYYY_MM_DD("yyyy-MM-dd"),
-    YYYYMM("yyyyMM");
+    YYYYMM("yyyyMM"),
+    YYYY_MM_DDTHH_MM_SS("yyyy-MM-dd'T'HH:mm:ssXXX"),;
 
     private String pattern;
 

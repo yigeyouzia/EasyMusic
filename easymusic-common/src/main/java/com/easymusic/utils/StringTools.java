@@ -61,6 +61,11 @@ public class StringTools {
         return RandomStringUtils.random(length, false, true);
     }
 
+    public static final String getRandomString(Integer count) {
+        return RandomStringUtils.random(count, true, true);
+    }
+
+
     // md5加密
     public static String encodeByMD5(String str) {
         return StringTools.isEmpty(str) ? "" : DigestUtils.md5Hex(str);

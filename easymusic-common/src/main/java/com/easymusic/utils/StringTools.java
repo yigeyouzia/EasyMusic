@@ -6,6 +6,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 
 public class StringTools {
@@ -79,5 +80,10 @@ public class StringTools {
             return false;
         }
         return true;
+    }
+
+    // 元转分
+    public static Object convertYuan2fenBigDecimal(BigDecimal amount) {
+        return amount.multiply(new BigDecimal(100)).setScale(0, BigDecimal.ROUND_DOWN);
     }
 }

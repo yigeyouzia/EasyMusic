@@ -1,6 +1,7 @@
 package com.easymusic.controller;
 
 import com.easymusic.annotation.GlobalInterceptor;
+import com.easymusic.entity.dto.PayInfoDTO;
 import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.enums.ProductOnSaleTypeEnum;
 import com.easymusic.entity.po.ProductInfo;
@@ -48,7 +49,7 @@ public class BuyController extends ABaseController {
     @GlobalInterceptor(checkLogin = true)
     public ResponseVO getPayInfo(@NotEmpty String productId, @NotNull Integer payType) {
         TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
-        payOrderInfoService.getPayInfo(tokenUserInfo, productId, payType);
-        return getSuccessResponseVO(null);
+        PayInfoDTO res = payOrderInfoService.getPayInfo(tokenUserInfo, productId, payType);
+        return getSuccessResponseVO(res);
     }
 }

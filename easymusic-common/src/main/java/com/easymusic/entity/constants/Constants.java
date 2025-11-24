@@ -12,6 +12,9 @@ public class Constants {
 
     public static final Integer LENGTH_12 = 12;
 
+    // 微信订单order_id长度 后面的随机数
+    public static final Integer LENGTH_14 = 15;
+
     public static final Integer LENGTH_20 = 20;
 
     public static final Integer LENGTH_30 = 30;
@@ -47,4 +50,5 @@ public class Constants {
     public static final String REDIS_KEY_TOKEN_ADMIN_USER = REDIS_KEY_PREFIX + "token:admin:";
 
     public static final Long REDIS_KEY_EXPIRES_ONE_DAY = REDIS_KEY_EXPIRES_ONE_MIN * 60 * 24;
+
 }

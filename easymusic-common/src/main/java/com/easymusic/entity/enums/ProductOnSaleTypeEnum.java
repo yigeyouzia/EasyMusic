@@ -17,11 +17,13 @@ public enum ProductOnSaleTypeEnum {
         this.type = status;
         this.desc = desc;
     }
-    public Integer getStatus() {
+
+    public Integer getType() {
         return type;
     }
 
     public String getDesc() {
         return desc;
     }
+
 }

@@ -58,7 +58,7 @@ public class RedisComponent {
     /**
      * 保存订单号到redis 1min过期
      * 1min过期
-     *
+     * 存入orderId
      * @param orderId
      */
     public void cacheHavePayOrder(String orderId) {
@@ -69,7 +69,7 @@ public class RedisComponent {
      * 获取订单号
      *
      * @param orderId
-     * @return
+     * @return orderId
      */
     public String getHavePayOrder(String orderId) {
         return (String) redisUtils.get(Constants.REDIS_KEY_ORDER_HAVE_PAY + orderId);

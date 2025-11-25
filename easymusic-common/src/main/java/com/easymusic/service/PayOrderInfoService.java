@@ -91,4 +91,13 @@ public interface PayOrderInfoService {
      */
     void payNotify(Integer payType, Map<String, Object> params, String body);
 
+    /**
+     * 订单是否支付
+     *
+     * @param userId
+     * @param orderId
+     * @return 用户积分
+     */
+    Integer checkPay(String userId, String orderId);
+
 }

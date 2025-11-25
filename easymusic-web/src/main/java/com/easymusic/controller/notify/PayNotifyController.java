@@ -24,7 +24,7 @@ public class PayNotifyController {
     @Resource
     private PayOrderInfoService payOrderInfoService;
 
-    @RequestMapping("/payNotify4WeChat/{[payType}")
+    @RequestMapping("/payNotify4WeChat/{payType}")
     public ResponseEntity payNotify4WeChat(@PathVariable("payType") Integer payType,
                                            @RequestBody String body,
                                            @RequestHeader(value = "Wechatpay-Timestamp", required = false) String wechatpayTimestamp,

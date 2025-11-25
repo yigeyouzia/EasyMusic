@@ -52,4 +52,22 @@ public class BuyController extends ABaseController {
         PayInfoDTO res = payOrderInfoService.getPayInfo(tokenUserInfo, productId, payType);
         return getSuccessResponseVO(res);
     }
+
+    /**
+     * 用户个人轮询是否已经支付
+     *
+     * @param orderId
+     * @return 用户积分
+     */
+    @RequestMapping("/checkPayOrder")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO checkPayOrder(@NotEmpty String orderId) {
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        Integer res = payOrderInfoService.checkPay(tokenUserInfo.getUserId(), orderId);
+        if(res == null) {
+            return getSuccessResponseVO(null);
+        }
+        tokenUserInfo.setIntegral(res);
+        return getSuccessResponseVO(tokenUserInfo);
+    }
 }

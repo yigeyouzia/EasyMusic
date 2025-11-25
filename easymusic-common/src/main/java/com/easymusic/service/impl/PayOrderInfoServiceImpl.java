@@ -8,6 +8,7 @@ import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.enums.*;
 import com.easymusic.entity.po.PayOrderInfo;
 import com.easymusic.entity.po.ProductInfo;
+import com.easymusic.entity.po.UserInfo;
 import com.easymusic.entity.query.PayOrderInfoQuery;
 import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.query.SimplePage;
@@ -18,6 +19,7 @@ import com.easymusic.mappers.ProductInfoMapper;
 import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.PayChannelService;
 import com.easymusic.service.PayOrderInfoService;
+import com.easymusic.service.UserInfoService;
 import com.easymusic.service.UserIntegralRecordService;
 import com.easymusic.spring.SpringContext;
 import com.easymusic.utils.DateUtil;
@@ -56,6 +58,9 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private UserInfoService userInfoService;
 
     /**
      * 根据条件查询列表
@@ -199,6 +204,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         payOrderInfo.setProductName(productInfo.getProductName());
         payOrderInfo.setStatus(PayOrderStatusEnum.NO_PAY.getStatus()); // 待支付
         payOrderInfo.setPayInfo(payUrl);
+        payOrderInfo.setPayType(payType);
 
         payOrderInfoMapper.insert(payOrderInfo);
 
@@ -272,6 +278,17 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         redisComponent.cacheHavePayOrder(payOrderInfo.getOrderId());
     }
 
+    @Override
+    public Integer checkPay(String userId, String orderId) {
+        String havePayOrderI = redisComponent.getHavePayOrder(orderId);
+        if(StringTools.isEmpty(havePayOrderI)) {
+            return null;
+        }
+
+        UserInfo userInfo = userInfoService.getUserInfoByUserId(userId);
+        return userInfo.getIntegral();
+    }
+
     /**
      * 定时任务， 自动查询未支付订单
      */
@@ -297,7 +314,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
                         // 主动查询微信接口  是否完成支付
                         PayOrderNotifyDTO payOrderNotifyDTO = payChannelService.queryOrder(payOrderInfo.getOrderId());
                         // 支付没有支付订单id
-                        if (payOrderNotifyDTO.getChannelOrderId() == null) {
+                        if (payOrderNotifyDTO == null) {
                             continue;
                         }
                         // 已经完成支付
@@ -305,6 +322,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
                         payOrderInfoSuccess(payOrderInfo, payOrderNotifyDTO.getChannelOrderId());
                         Thread.sleep(10000);
                     }
+                    Thread.sleep(15000);
                 } catch (Exception e) {
                     log.error("查询未支付订单失败", e);
                     try {

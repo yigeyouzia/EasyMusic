@@ -51,9 +51,35 @@ public class RedisComponent {
         redisUtils.delete(Constants.REDIS_KEY_TOKEN_WEB_USER + token);
     }
 
+    /**
+     * 积分业务
+     */
+
+    /**
+     * 保存订单号到redis 1min过期
+     * 1min过期
+     *
+     * @param orderId
+     */
+    public void cacheHavePayOrder(String orderId) {
+        redisUtils.setex(Constants.REDIS_KEY_ORDER_HAVE_PAY + orderId, orderId, Constants.REDIS_KEY_EXPIRES_ONE_MIN);
+    }
+
+    /**
+     * 获取订单号
+     *
+     * @param orderId
+     * @return
+     */
+    public String getHavePayOrder(String orderId) {
+        return (String) redisUtils.get(Constants.REDIS_KEY_ORDER_HAVE_PAY + orderId);
+    }
+
     // admin *********************************************************
+
     /**
      * 保存管理员token到redis 7天过期
+     *
      * @param adminDTO
      */
     public void saveTokenUserInfo4Admin(TokenUserInfo4AdminDTO adminDTO) {

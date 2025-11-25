@@ -57,4 +57,12 @@ public class Constants {
     // 微信支付二维码请求失效时间
     public static final Integer ORDER_TIMEOUT_MIN = 10;
 
+
+    /**
+     * 订单 积分相关
+     */
+
+    public static final String REDIS_KEY_ORDER_HAVE_PAY = REDIS_KEY_PREFIX + "order:havepay:";
+
+
 }

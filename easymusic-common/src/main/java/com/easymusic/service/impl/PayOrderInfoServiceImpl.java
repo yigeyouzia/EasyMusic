@@ -15,8 +15,10 @@ import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.exception.BusinessException;
 import com.easymusic.mappers.PayOrderInfoMapper;
 import com.easymusic.mappers.ProductInfoMapper;
+import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.PayChannelService;
 import com.easymusic.service.PayOrderInfoService;
+import com.easymusic.service.UserIntegralRecordService;
 import com.easymusic.spring.SpringContext;
 import com.easymusic.utils.DateUtil;
 import com.easymusic.utils.StringTools;
@@ -47,6 +49,13 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
 
     @Resource
     private AppConfig appConfig;
+
+    @Resource
+    private UserIntegralRecordService userIntegralRecordService;
+
+
+    @Resource
+    private RedisComponent redisComponent;
 
     /**
      * 根据条件查询列表
@@ -209,6 +218,13 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
     }
 
 
+    /**
+     * 前端主动轮询订单支付状态
+     *
+     * @param payType 支付方式
+     * @param params
+     * @param body
+     */
     @Override
     public void payNotify(Integer payType, Map<String, Object> params, String body) {
         PayOrderTypeEnum payOrderTypeEnum = PayOrderTypeEnum.getByType(payType);
@@ -224,6 +240,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
             throw new BusinessException("支付回调失败， 订单" + payOrderNotifyDTO.getOrderId() + "不存在");
         }
         // TODO 更新用户积分
+        payOrderInfoSuccess(payOrderInfo, payOrderNotifyDTO.getChannelOrderId());
 
     }
 
@@ -245,8 +262,19 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         if (updateCount == 0) {
             throw new BusinessException("订单" + payOrderInfo.getOrderId() + "已支付" + " 支付订单更新失败");
         }
+        // 更新用户积分
+        userIntegralRecordService.changeUserIntegral(UserIntegralRecordTypeEnum.RECHARGE,
+                payOrderInfo.getOrderId(),
+                payOrderInfo.getUserId(),
+                payOrderInfo.getIntegral(),
+                payOrderInfo.getAmount());
+        // 将已支付的订单放入缓存
+        redisComponent.cacheHavePayOrder(payOrderInfo.getOrderId());
     }
 
+    /**
+     * 定时任务， 自动查询未支付订单
+     */
     @PostConstruct
     public void checkPayOrder() {
         if (!appConfig.getAutoCheckPay()) {
@@ -257,6 +285,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
             // 查询未支付订单
             while (true) {
                 try {
+                    // 找到订单表中状态为待支付的订单
                     PayOrderInfoQuery query = new PayOrderInfoQuery();
                     query.setStatus(PayOrderStatusEnum.NO_PAY.getStatus());
                     List<PayOrderInfo> payOrderInfoList = payOrderInfoMapper.selectList(query);
@@ -265,12 +294,15 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
                         PayOrderTypeEnum payOrderTypeEnum = PayOrderTypeEnum.getByType(payOrderInfo.getPayType());
                         String beanName = payOrderTypeEnum.getBeanName();
                         PayChannelService payChannelService = (PayChannelService) SpringContext.getBean(beanName);
+                        // 主动查询微信接口  是否完成支付
                         PayOrderNotifyDTO payOrderNotifyDTO = payChannelService.queryOrder(payOrderInfo.getOrderId());
                         // 支付没有支付订单id
                         if (payOrderNotifyDTO.getChannelOrderId() == null) {
                             continue;
                         }
-                        // TODO 更新用户积分
+                        // 已经完成支付
+                        // 更新用户积分
+                        payOrderInfoSuccess(payOrderInfo, payOrderNotifyDTO.getChannelOrderId());
                         Thread.sleep(10000);
                     }
                 } catch (Exception e) {

@@ -1,16 +1,24 @@
 package com.easymusic.service.impl;
 
 import com.easymusic.entity.enums.PageSize;
+import com.easymusic.entity.enums.UserIntegralRecordTypeEnum;
+import com.easymusic.entity.po.UserInfo;
 import com.easymusic.entity.po.UserIntegralRecord;
 import com.easymusic.entity.query.SimplePage;
+import com.easymusic.entity.query.UserInfoQuery;
 import com.easymusic.entity.query.UserIntegralRecordQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+import com.easymusic.exception.BusinessException;
+import com.easymusic.mappers.UserInfoMapper;
 import com.easymusic.mappers.UserIntegralRecordMapper;
 import com.easymusic.service.UserIntegralRecordService;
 import com.easymusic.utils.StringTools;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 
@@ -20,109 +28,139 @@ import java.util.List;
 @Service("userIntegralRecordService")
 public class UserIntegralRecordServiceImpl implements UserIntegralRecordService {
 
-	@Resource
-	private UserIntegralRecordMapper<UserIntegralRecord, UserIntegralRecordQuery> userIntegralRecordMapper;
+    @Resource
+    private UserIntegralRecordMapper<UserIntegralRecord, UserIntegralRecordQuery> userIntegralRecordMapper;
 
-	/**
-	 * 根据条件查询列表
-	 */
-	@Override
-	public List<UserIntegralRecord> findListByParam(UserIntegralRecordQuery param) {
-		return this.userIntegralRecordMapper.selectList(param);
-	}
+    @Resource
+    private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
 
-	/**
-	 * 根据条件查询列表
-	 */
-	@Override
-	public Integer findCountByParam(UserIntegralRecordQuery param) {
-		return this.userIntegralRecordMapper.selectCount(param);
-	}
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public List<UserIntegralRecord> findListByParam(UserIntegralRecordQuery param) {
+        return this.userIntegralRecordMapper.selectList(param);
+    }
 
-	/**
-	 * 分页查询方法
-	 */
-	@Override
-	public PaginationResultVO<UserIntegralRecord> findListByPage(UserIntegralRecordQuery param) {
-		int count = this.findCountByParam(param);
-		int pageSize = param.getPageSize() == null ? PageSize.SIZE15.getSize() : param.getPageSize();
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public Integer findCountByParam(UserIntegralRecordQuery param) {
+        return this.userIntegralRecordMapper.selectCount(param);
+    }
 
-		SimplePage page = new SimplePage(param.getPageNo(), count, pageSize);
-		param.setSimplePage(page);
-		List<UserIntegralRecord> list = this.findListByParam(param);
-		PaginationResultVO<UserIntegralRecord> result = new PaginationResultVO(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
-		return result;
-	}
+    /**
+     * 分页查询方法
+     */
+    @Override
+    public PaginationResultVO<UserIntegralRecord> findListByPage(UserIntegralRecordQuery param) {
+        int count = this.findCountByParam(param);
+        int pageSize = param.getPageSize() == null ? PageSize.SIZE15.getSize() : param.getPageSize();
 
-	/**
-	 * 新增
-	 */
-	@Override
-	public Integer add(UserIntegralRecord bean) {
-		return this.userIntegralRecordMapper.insert(bean);
-	}
+        SimplePage page = new SimplePage(param.getPageNo(), count, pageSize);
+        param.setSimplePage(page);
+        List<UserIntegralRecord> list = this.findListByParam(param);
+        PaginationResultVO<UserIntegralRecord> result = new PaginationResultVO(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+        return result;
+    }
 
-	/**
-	 * 批量新增
-	 */
-	@Override
-	public Integer addBatch(List<UserIntegralRecord> listBean) {
-		if (listBean == null || listBean.isEmpty()) {
-			return 0;
-		}
-		return this.userIntegralRecordMapper.insertBatch(listBean);
-	}
+    /**
+     * 新增
+     */
+    @Override
+    public Integer add(UserIntegralRecord bean) {
+        return this.userIntegralRecordMapper.insert(bean);
+    }
 
-	/**
-	 * 批量新增或者修改
-	 */
-	@Override
-	public Integer addOrUpdateBatch(List<UserIntegralRecord> listBean) {
-		if (listBean == null || listBean.isEmpty()) {
-			return 0;
-		}
-		return this.userIntegralRecordMapper.insertOrUpdateBatch(listBean);
-	}
+    /**
+     * 批量新增
+     */
+    @Override
+    public Integer addBatch(List<UserIntegralRecord> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.userIntegralRecordMapper.insertBatch(listBean);
+    }
 
-	/**
-	 * 多条件更新
-	 */
-	@Override
-	public Integer updateByParam(UserIntegralRecord bean, UserIntegralRecordQuery param) {
-		StringTools.checkParam(param);
-		return this.userIntegralRecordMapper.updateByParam(bean, param);
-	}
+    /**
+     * 批量新增或者修改
+     */
+    @Override
+    public Integer addOrUpdateBatch(List<UserIntegralRecord> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.userIntegralRecordMapper.insertOrUpdateBatch(listBean);
+    }
 
-	/**
-	 * 多条件删除
-	 */
-	@Override
-	public Integer deleteByParam(UserIntegralRecordQuery param) {
-		StringTools.checkParam(param);
-		return this.userIntegralRecordMapper.deleteByParam(param);
-	}
+    /**
+     * 多条件更新
+     */
+    @Override
+    public Integer updateByParam(UserIntegralRecord bean, UserIntegralRecordQuery param) {
+        StringTools.checkParam(param);
+        return this.userIntegralRecordMapper.updateByParam(bean, param);
+    }
 
-	/**
-	 * 根据RecordId获取对象
-	 */
-	@Override
-	public UserIntegralRecord getUserIntegralRecordByRecordId(Integer recordId) {
-		return this.userIntegralRecordMapper.selectByRecordId(recordId);
-	}
+    /**
+     * 多条件删除
+     */
+    @Override
+    public Integer deleteByParam(UserIntegralRecordQuery param) {
+        StringTools.checkParam(param);
+        return this.userIntegralRecordMapper.deleteByParam(param);
+    }
 
-	/**
-	 * 根据RecordId修改
-	 */
-	@Override
-	public Integer updateUserIntegralRecordByRecordId(UserIntegralRecord bean, Integer recordId) {
-		return this.userIntegralRecordMapper.updateByRecordId(bean, recordId);
-	}
+    /**
+     * 根据RecordId获取对象
+     */
+    @Override
+    public UserIntegralRecord getUserIntegralRecordByRecordId(Integer recordId) {
+        return this.userIntegralRecordMapper.selectByRecordId(recordId);
+    }
 
-	/**
-	 * 根据RecordId删除
-	 */
-	@Override
-	public Integer deleteUserIntegralRecordByRecordId(Integer recordId) {
-		return this.userIntegralRecordMapper.deleteByRecordId(recordId);
-	}
+    /**
+     * 根据RecordId修改
+     */
+    @Override
+    public Integer updateUserIntegralRecordByRecordId(UserIntegralRecord bean, Integer recordId) {
+        return this.userIntegralRecordMapper.updateByRecordId(bean, recordId);
+    }
+
+    /**
+     * 根据RecordId删除
+     */
+    @Override
+    public Integer deleteUserIntegralRecordByRecordId(Integer recordId) {
+        return this.userIntegralRecordMapper.deleteByRecordId(recordId);
+    }
+
+    /**
+     * 操作两个表
+     * 记录积分表  改变用户积分
+     *
+     * @param recordTypeEnum
+     * @param businessId
+     * @param userId
+     * @param changeIntegral
+     * @param amount
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changeUserIntegral(UserIntegralRecordTypeEnum recordTypeEnum, String businessId, String userId, Integer changeIntegral, BigDecimal amount) {
+        Integer updateCount = userInfoMapper.changeUserIntegral(userId, changeIntegral);
+        if (updateCount == 0) {
+            throw new BusinessException("用户积分不够");
+        }
+        UserIntegralRecord record = new UserIntegralRecord();
+        record.setChangeIntegral(changeIntegral);
+        record.setUserId(userId);
+        record.setCreateTime(new Date());
+        record.setBusinessId(businessId);
+        record.setRecordType(recordTypeEnum.getType());
+        record.setAmount(amount);
+        this.add(record);
+    }
 }

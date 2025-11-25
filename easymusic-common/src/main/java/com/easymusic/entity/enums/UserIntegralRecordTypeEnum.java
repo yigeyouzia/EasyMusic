@@ -4,6 +4,7 @@ package com.easymusic.entity.enums;
 import java.util.Arrays;
 import java.util.Optional;
 
+// 用户积分枚举类
 public enum UserIntegralRecordTypeEnum {
 
     CREATE_MUSIC_BACK(0, "创作音乐失败退回"),

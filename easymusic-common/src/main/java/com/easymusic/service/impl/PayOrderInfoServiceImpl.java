@@ -227,6 +227,26 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
 
     }
 
+    private void payOrderInfoSuccess(PayOrderInfo payOrderInfo, String channelOrderId) {
+        if (payOrderInfo.getStatus().equals(PayOrderStatusEnum.HAVE_PAY.getStatus())) {
+            return;
+        }
+
+        PayOrderInfo updateInfo = new PayOrderInfo();
+        updateInfo.setStatus(PayOrderStatusEnum.HAVE_PAY.getStatus());
+        updateInfo.setChannelOrderId(channelOrderId);
+        updateInfo.setPayTime(new Date());
+
+        // 乐观锁
+        PayOrderInfoQuery query = new PayOrderInfoQuery();
+        query.setOrderId(payOrderInfo.getOrderId());
+        query.setStatus(PayOrderStatusEnum.NO_PAY.getStatus());
+        Integer updateCount = payOrderInfoMapper.updateByParam(updateInfo, query);
+        if (updateCount == 0) {
+            throw new BusinessException("订单" + payOrderInfo.getOrderId() + "已支付" + " 支付订单更新失败");
+        }
+    }
+
     @PostConstruct
     public void checkPayOrder() {
         if (!appConfig.getAutoCheckPay()) {

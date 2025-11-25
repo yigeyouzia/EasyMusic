@@ -197,7 +197,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         String payUrl = payChannelService.getPayUrl(orderId, productInfo.getPrice(), productInfo.getProductName());
         payOrderInfo.setOrderId(orderId);
         payOrderInfo.setCreateTime(new Date());
-        productInfo.setIntegral(productInfo.getIntegral()); // 积分
+        payOrderInfo.setIntegral(productInfo.getIntegral()); // 积分
         payOrderInfo.setUserId(tokenUserInfoDTO.getUserId());
         payOrderInfo.setAmount(productInfo.getPrice());
         payOrderInfo.setProductId(productId);
@@ -280,8 +280,8 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
 
     @Override
     public Integer checkPay(String userId, String orderId) {
-        String havePayOrderI = redisComponent.getHavePayOrder(orderId);
-        if(StringTools.isEmpty(havePayOrderI)) {
+        String havePayOrder = redisComponent.getHavePayOrder(orderId);
+        if(StringTools.isEmpty(havePayOrder)) {
             return null;
         }
 
@@ -322,7 +322,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
                         payOrderInfoSuccess(payOrderInfo, payOrderNotifyDTO.getChannelOrderId());
                         Thread.sleep(10000);
                     }
-                    Thread.sleep(15000);
+                    Thread.sleep(10000);
                 } catch (Exception e) {
                     log.error("查询未支付订单失败", e);
                     try {

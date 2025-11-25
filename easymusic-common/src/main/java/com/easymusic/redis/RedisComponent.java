@@ -62,7 +62,7 @@ public class RedisComponent {
      * @param orderId
      */
     public void cacheHavePayOrder(String orderId) {
-        redisUtils.setex(Constants.REDIS_KEY_ORDER_HAVE_PAY + orderId, orderId, Constants.REDIS_KEY_EXPIRES_ONE_MIN);
+        redisUtils.setex(Constants.REDIS_KEY_ORDER_HAVE_PAY + orderId, orderId, Constants.REDIS_KEY_EXPIRES_ONE_MIN * 10);
     }
 
     /**

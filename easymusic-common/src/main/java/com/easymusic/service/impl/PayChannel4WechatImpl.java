@@ -5,7 +5,6 @@ package com.easymusic.service.impl;
  * * @date 2025/11/24 17:08:08
  */
 
-import com.alibaba.fastjson2.JSONPath;
 import com.easymusic.entity.config.AppConfig;
 import com.easymusic.entity.constants.Constants;
 import com.easymusic.entity.dto.PayOrderNotifyDTO;
@@ -129,26 +128,27 @@ public class PayChannel4WechatImpl implements PayChannelService {
         String response = OKHttpUtils.getRequest(url, headerMap);
         Map<String, Object> bodyInfoMap = JsonUtils.convertJson2Obj(response, Map.class);
         //判断状态
-//        if (!RETURN_CODE_SUCCESS.equals(bodyInfoMap.get("trade_state"))) {
-//            return null;
-//        }
-//        // 微信支付id
-//        String channelOrderId = String.valueOf(bodyInfoMap.get("transaction_id"));
-//        PayOrderNotifyDTO payOrderNotifyDto = new PayOrderNotifyDTO();
-//        payOrderNotifyDto.setChannelOrderId(channelOrderId);
-//        payOrderNotifyDto.setOrderId(orderId);
-
-
-        // 法二获取josn， JSONPath解决多层级嵌套
-        String tradeState = (String) JSONPath.eval(response, "$.amount.total");
         if (!RETURN_CODE_SUCCESS.equals(bodyInfoMap.get("trade_state"))) {
+            log.info("查询订单:{}, 还未支付", orderId);
             return null;
         }
-        String channelOrderId = String.valueOf(bodyInfoMap.get("$.transaction_id"));
+        // 微信支付id
+        String channelOrderId = String.valueOf(bodyInfoMap.get("transaction_id"));
         PayOrderNotifyDTO payOrderNotifyDto = new PayOrderNotifyDTO();
         payOrderNotifyDto.setChannelOrderId(channelOrderId);
         payOrderNotifyDto.setOrderId(orderId);
 
+        // 法二获取josn， JSONPath解决多层级嵌套
+//        String tradeState = (String) JSONPath.eval(response, "$.amount.total");
+//        if (!RETURN_CODE_SUCCESS.equals(tradeState)){
+//            return null;
+//        }
+//        PayOrderNotifyDTO payOrderNotifyDto = new PayOrderNotifyDTO();
+//        String channelOrderId = String.valueOf(bodyInfoMap.get("$.transaction_id"));
+//        payOrderNotifyDto.setChannelOrderId(channelOrderId);
+//        payOrderNotifyDto.setOrderId(orderId);
+
+        log.info("查询订单:{}, 支付成功， 返回payOrderNotifyDto:{}", orderId, payOrderNotifyDto);
         return payOrderNotifyDto;
     }
 

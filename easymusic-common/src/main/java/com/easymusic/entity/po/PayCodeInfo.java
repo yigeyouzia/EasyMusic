@@ -1,14 +1,13 @@
 package com.easymusic.entity.po;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.math.BigDecimal;
-import java.util.Date;
 import com.easymusic.entity.enums.DateTimePatternEnum;
 import com.easymusic.utils.DateUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
 
 
 /**
@@ -51,6 +50,16 @@ public class PayCodeInfo implements Serializable {
 	 */
 	private Integer status;
 
+	// 关联查询人
+	private String nickName;
+
+	public String getNickName() {
+		return nickName;
+	}
+
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
 
 	public void setPayCode(String payCode){
 		this.payCode = payCode;

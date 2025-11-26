@@ -74,7 +74,15 @@
 
 	<!-- 查询集合-->
 	<select id="selectList" resultMap="base_result_map" >
-		 SELECT <include refid="base_column_list" /> FROM pay_code_info p <include refid="query_condition" />
+		SELECT <include refid="base_column_list" />
+		<if test="query.queryUser">
+			,u.nick_name nickName
+		</if>
+		FROM pay_code_info p
+		<include refid="query_condition" />
+		<if test="query.queryUser">
+			left join user_info u on p.use_user_id = u.user_id
+		</if>
 		 <if test="query.orderBy!=null">
 			 order by ${query.orderBy}
 		 </if>

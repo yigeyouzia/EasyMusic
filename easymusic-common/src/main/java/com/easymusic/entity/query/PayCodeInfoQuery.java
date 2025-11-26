@@ -1,7 +1,6 @@
 package com.easymusic.entity.query;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 
 /**
@@ -52,6 +51,16 @@ public class PayCodeInfoQuery extends BaseParam {
 	 */
 	private Integer status;
 
+	// 开关是否查询人
+	private boolean queryUser;
+
+	public boolean isQueryUser() {
+		return queryUser;
+	}
+
+	public void setQueryUser(boolean queryUser) {
+		this.queryUser = queryUser;
+	}
 
 	public void setPayCode(String payCode){
 		this.payCode = payCode;

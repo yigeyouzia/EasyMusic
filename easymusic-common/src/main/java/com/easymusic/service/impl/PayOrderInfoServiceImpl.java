@@ -6,14 +6,17 @@ import com.easymusic.entity.dto.PayInfoDTO;
 import com.easymusic.entity.dto.PayOrderNotifyDTO;
 import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.enums.*;
+import com.easymusic.entity.po.PayCodeInfo;
 import com.easymusic.entity.po.PayOrderInfo;
 import com.easymusic.entity.po.ProductInfo;
 import com.easymusic.entity.po.UserInfo;
+import com.easymusic.entity.query.PayCodeInfoQuery;
 import com.easymusic.entity.query.PayOrderInfoQuery;
 import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.query.SimplePage;
 import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.exception.BusinessException;
+import com.easymusic.mappers.PayCodeInfoMapper;
 import com.easymusic.mappers.PayOrderInfoMapper;
 import com.easymusic.mappers.ProductInfoMapper;
 import com.easymusic.redis.RedisComponent;
@@ -28,6 +31,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -62,6 +66,9 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
 
     @Resource
     private UserInfoService userInfoService;
+
+    @Resource
+    private PayCodeInfoMapper<PayCodeInfo, PayCodeInfoQuery> payCodeInfoMapper;
 
     /**
      * 根据条件查询列表
@@ -382,4 +389,66 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         });
     }
 
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void buyByPayCode(String productId, String payCode, String userId) {
+        // 判断商品是否存在
+        PayCodeInfo payCodeInfo = payCodeInfoMapper.selectByPayCode(payCode);
+        if (payCodeInfo == null) {
+            throw new BusinessException("支付码不正确或已过期或者已使用");
+        }
+
+        if (PayCodeStatusEnum.USED.getStatus().equals(payCodeInfo.getStatus()) ||
+                System.currentTimeMillis() - payCodeInfo.getCreateTime().getTime() > 1000 * 60 * 30) {
+            throw new BusinessException("支付码不正确或已过期或者已使用");
+        }
+
+        // 商品是否存在 在售
+        ProductInfo productInfo = productInfoMapper.selectByProductId(productId);
+        if (productInfo == null || !productInfo.getOnsaleType().equals(ProductOnSaleTypeEnum.ON_SALE.getType())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+
+        if (productInfo.getPrice().compareTo(payCodeInfo.getAmount()) != 0){
+            throw new BusinessException("支付码金额与商品金额不一致");
+        }
+
+        // 插入支付信息
+        Date curDate = new Date();
+        String orderId = getOrderId();
+        PayOrderInfo payOrderInfo = new PayOrderInfo();
+        payOrderInfo.setOrderId(orderId);
+        payOrderInfo.setCreateTime(curDate);
+        payOrderInfo.setIntegral(productInfo.getIntegral()); // 积分
+        payOrderInfo.setUserId(userId);
+        payOrderInfo.setAmount(productInfo.getPrice());
+        payOrderInfo.setProductId(productId);
+        payOrderInfo.setProductName(productInfo.getProductName());
+        payOrderInfo.setStatus(PayOrderStatusEnum.HAVE_PAY.getStatus()); // 待支付
+        payOrderInfo.setPayType(PayOrderTypeEnum.PAY_CODE.getType());
+        payOrderInfo.setPayTime(curDate);
+        payOrderInfoMapper.insert(payOrderInfo);
+
+        // 更新支付码状态
+        PayCodeInfo updateInfo = new PayCodeInfo();
+        updateInfo.setStatus(PayCodeStatusEnum.USED.getStatus());
+        updateInfo.setUseUserId(userId);
+        updateInfo.setUseTime(curDate);
+        PayCodeInfoQuery query = new PayCodeInfoQuery();
+        query.setPayCode(payCode);
+        query.setStatus(PayCodeStatusEnum.NO_USE.getStatus());
+
+        Integer count = payCodeInfoMapper.updateByParam(updateInfo, query);
+        if (count == 0) {
+            throw new BusinessException("支付码支付失败");
+        }
+
+        userIntegralRecordService.changeUserIntegral(UserIntegralRecordTypeEnum.RECHARGE,
+                orderId,
+                userId,
+                productInfo.getIntegral(),
+                productInfo.getPrice());
+
+    }
 }

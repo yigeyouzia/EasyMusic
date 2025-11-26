@@ -7,6 +7,8 @@ import com.easymusic.entity.enums.ProductOnSaleTypeEnum;
 import com.easymusic.entity.po.ProductInfo;
 import com.easymusic.entity.query.ProductInfoQuery;
 import com.easymusic.entity.vo.ResponseVO;
+import com.easymusic.exception.BusinessException;
+import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.PayOrderInfoService;
 import com.easymusic.service.ProductInfoService;
 import jakarta.annotation.Resource;
@@ -36,6 +38,9 @@ public class BuyController extends ABaseController {
     @Resource
     private PayOrderInfoService payOrderInfoService;
 
+    @Resource
+    private RedisComponent redisComponent;
+
     @RequestMapping("/loadProduct")
     public ResponseVO loadProduct() {
         ProductInfoQuery query = new ProductInfoQuery();
@@ -64,10 +69,37 @@ public class BuyController extends ABaseController {
     public ResponseVO checkPayOrder(@NotEmpty String orderId) {
         TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
         Integer res = payOrderInfoService.checkPay(tokenUserInfo.getUserId(), orderId);
-        if(res == null) {
+        if (res == null) {
             return getSuccessResponseVO(null);
         }
         tokenUserInfo.setIntegral(res);
         return getSuccessResponseVO(tokenUserInfo);
+    }
+
+    /**
+     * 付款码支付
+     *
+     * @param checkCodeKey 验证码的key
+     * @param checkCode 验证码
+     * @param payCode 付款码 支付码
+     * @param productId 商品id
+     * @return
+     */
+    @RequestMapping("/buyByPayCode")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO buyByPayCode(@NotEmpty String checkCodeKey,
+                                   @NotEmpty String checkCode,
+                                   @NotEmpty String payCode,
+                                   @NotEmpty String productId) {
+        try {
+            if (!checkCode.equals(redisComponent.getCheckCode(checkCodeKey))) {
+                throw new BusinessException("验证码错误");
+            }
+            TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+            payOrderInfoService.buyByPayCode(productId, payCode, tokenUserInfo.getUserId());
+            return getSuccessResponseVO(null);
+        } finally {
+            redisComponent.cleanCheckCode(checkCodeKey);
+        }
     }
 }

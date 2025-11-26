@@ -10,6 +10,8 @@ public class Constants {
 
     public static final Integer LENGTH_5 = 5;
 
+    public static final Integer LENGTH_8 = 8;
+
     public static final Integer LENGTH_12 = 12;
 
     // 微信订单order_id长度 后面的随机数

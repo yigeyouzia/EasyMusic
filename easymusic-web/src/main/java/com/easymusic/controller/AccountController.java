@@ -64,7 +64,7 @@ public class AccountController extends ABaseController {
                                @NotEmpty @Size(min = 10, max = 18) String password,
                                @NotEmpty @Size(max = 20) String nickName) {
         try {
-            if (!redisComponent.getCheckCode(checkCodeKey).equals(checkCode)) {
+            if (!checkCode.equals(redisComponent.getCheckCode(checkCodeKey))) {
                 throw new BusinessException("验证码错误");
             }
             userInfoService.register(email, password, nickName);
@@ -80,7 +80,7 @@ public class AccountController extends ABaseController {
                                @NotEmpty @Email @Size(max = 50) String email,
                                @NotEmpty @Size(max = 32) String password) {
         try {
-            if (!redisComponent.getCheckCode(checkCodeKey).equals(checkCode)) {
+            if (!checkCode.equals(redisComponent.getCheckCode(checkCodeKey))) {
                 throw new BusinessException("验证码错误");
             }
             TokenUserInfoDTO tokenUserInfoDTO = userInfoService.login(email, password);

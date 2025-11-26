@@ -221,7 +221,7 @@ public class PayChannel4WechatImpl implements PayChannelService {
      * @return
      * @throws BusinessException
      */
-    private String getToken4Wechat(String method, String url, String body, String merchantId, String certSerialNo, String keyPath) throws BusinessException {
+    public String getToken4Wechat(String method, String url, String body, String merchantId, String certSerialNo, String keyPath) throws BusinessException {
         HttpUrl httpurl = HttpUrl.parse(url);
         String nonceStr = StringTools.getRandomString(Constants.LENGTH_30);
         long timestamp = System.currentTimeMillis() / 1000;

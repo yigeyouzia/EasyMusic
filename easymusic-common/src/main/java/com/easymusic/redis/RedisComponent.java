@@ -6,6 +6,7 @@ import com.easymusic.entity.dto.TokenUserInfoDTO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -59,6 +60,7 @@ public class RedisComponent {
      * 保存订单号到redis 1min过期
      * 1min过期
      * 存入orderId
+     *
      * @param orderId
      */
     public void cacheHavePayOrder(String orderId) {
@@ -73,6 +75,26 @@ public class RedisComponent {
      */
     public String getHavePayOrder(String orderId) {
         return (String) redisUtils.get(Constants.REDIS_KEY_ORDER_HAVE_PAY + orderId);
+    }
+
+    /**
+     * 延时队列
+     * 添加订单 orderId
+     *
+     * @param delayMin 延迟时间 单位分钟
+     * @param orderId 订单号
+     */
+    public void addOrder2DelayQueue(Integer delayMin, String orderId) {
+        long executeTime = System.currentTimeMillis() + delayMin * 60 * 1000;
+        redisUtils.zsetAdd(Constants.REDIS_KEY_ORDER_DELAY_QUEUE, orderId, executeTime);
+    }
+
+    public Set<String> getTimeOutOrder() {
+        return redisUtils.zsetRangeByScore(Constants.REDIS_KEY_ORDER_DELAY_QUEUE, 0, System.currentTimeMillis());
+    }
+
+    public Long removeTimeOutOrder(String orderId) {
+        return redisUtils.zsetAddRemove(Constants.REDIS_KEY_ORDER_DELAY_QUEUE, orderId);
     }
 
     // admin *********************************************************

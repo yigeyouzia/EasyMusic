@@ -1,6 +1,7 @@
 package com.easymusic.controller;
 
 import com.easymusic.entity.dto.TokenUserInfoDTO;
+import com.easymusic.entity.po.UserInfo;
 import com.easymusic.entity.vo.CheckCodeVO;
 import com.easymusic.entity.vo.ResponseVO;
 import com.easymusic.exception.BusinessException;
@@ -92,6 +93,12 @@ public class AccountController extends ABaseController {
     @RequestMapping("/getLoginInfo")
     public ResponseVO getLoginInfo() {
         TokenUserInfoDTO res = getTokenUserInfo(null);
+        if(res == null) {
+            return getSuccessResponseVO(null);
+        }
+        redisComponent.saveUserTokenInfoDto(res);
+        UserInfo userInfo = userInfoService.getUserInfoByUserId(res.getUserId());
+        res.setIntegral(userInfo.getIntegral());
         return getSuccessResponseVO(res);
     }
 

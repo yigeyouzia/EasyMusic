@@ -62,7 +62,10 @@ public class Constants {
      * 订单 积分相关
      */
 
+    // 已经支付的订单 轮询得到的，需要后续处理
     public static final String REDIS_KEY_ORDER_HAVE_PAY = REDIS_KEY_PREFIX + "order:havepay:";
 
+    // 超时订单队列
+    public static final String REDIS_KEY_ORDER_DELAY_QUEUE = REDIS_KEY_PREFIX + "order:delay:queue:";
 
 }

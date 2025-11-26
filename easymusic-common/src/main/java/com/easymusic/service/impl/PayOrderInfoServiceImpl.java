@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -205,8 +206,10 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
         payOrderInfo.setStatus(PayOrderStatusEnum.NO_PAY.getStatus()); // 待支付
         payOrderInfo.setPayInfo(payUrl);
         payOrderInfo.setPayType(payType);
-
         payOrderInfoMapper.insert(payOrderInfo);
+
+        // 将订单放入延时队列 从11分钟开始，二维码失效时间是10分钟
+        redisComponent.addOrder2DelayQueue(Constants.ORDER_TIMEOUT_MIN + 1, orderId);
 
         // 返给前端支付信息
         PayInfoDTO payInfoDTO = new PayInfoDTO();
@@ -281,7 +284,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
     @Override
     public Integer checkPay(String userId, String orderId) {
         String havePayOrder = redisComponent.getHavePayOrder(orderId);
-        if(StringTools.isEmpty(havePayOrder)) {
+        if (StringTools.isEmpty(havePayOrder)) {
             return null;
         }
 
@@ -323,6 +326,50 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
                         Thread.sleep(10000);
                     }
                     Thread.sleep(10000);
+                } catch (Exception e) {
+                    log.error("查询未支付订单失败", e);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        log.error("休眠失败", ex);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 定时任务， 延时队列 订单超时
+     */
+    @PostConstruct
+    public void consumeDelayOrder() {
+        ExecutorServiceSingletonEnum.INSTANCE.getExecutorService().execute(() -> {
+            // 查询未支付订单
+            while (true) {
+                try {
+                    Set<String> queueOrderList = redisComponent.getTimeOutOrder();
+                    if (queueOrderList == null || queueOrderList.isEmpty()) {
+                        Thread.sleep(10000);
+                        continue;
+                    }
+                    for (String orderId : queueOrderList) {
+                        if (redisComponent.removeTimeOutOrder(orderId) > 0) {
+                            // 先移除 若有
+                            PayOrderInfo payOrderInfo = payOrderInfoMapper.selectByOrderId(orderId);
+                            if (payOrderInfo.getStatus().equals(PayOrderStatusEnum.HAVE_PAY.getStatus())) {
+                                continue;
+                            }
+                            // 订单超时
+                            PayOrderInfo updateInfo = new PayOrderInfo();
+                            updateInfo.setStatus(PayOrderStatusEnum.TIME_OUT.getStatus());
+
+                            PayOrderInfoQuery query = new PayOrderInfoQuery();
+                            query.setOrderId(payOrderInfo.getOrderId());
+                            query.setStatus(PayOrderStatusEnum.NO_PAY.getStatus());
+                            payOrderInfoMapper.updateByParam(updateInfo, query);
+                        }
+                    }
+
                 } catch (Exception e) {
                     log.error("查询未支付订单失败", e);
                     try {

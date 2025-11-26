@@ -3,9 +3,12 @@ package com.easymusic.redis;
 import com.easymusic.entity.constants.Constants;
 import com.easymusic.entity.dto.TokenUserInfo4AdminDTO;
 import com.easymusic.entity.dto.TokenUserInfoDTO;
+import com.easymusic.entity.po.SysDict;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -119,4 +122,28 @@ public class RedisComponent {
         redisUtils.delete(Constants.REDIS_KEY_TOKEN_ADMIN_USER + token);
     }
 
+    /**
+     * 字典 系统配置
+     */
+
+    /**
+     * 保存字典到redis
+     * hset
+     * 键：父节点
+     * 值：子节点列表
+     *
+     * @param dictPcode 父节点
+     * @param sysDictList 子节点列表
+     */
+    public void saveDict(String dictPcode, List<SysDict> sysDictList) {
+        redisUtils.hset(Constants.REDIS_KEY_SYS_DICT, dictPcode, sysDictList);
+    }
+
+    public List<SysDict> getDictSubList(String dictPcode) {
+        return (List<SysDict>) redisUtils.hget(Constants.REDIS_KEY_SYS_DICT, dictPcode);
+    }
+
+    public Map<String, List<SysDict>> getAllDict() {
+        return (Map<String, List<SysDict>>) redisUtils.entries(Constants.REDIS_KEY_SYS_DICT);
+    }
 }

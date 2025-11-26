@@ -1,6 +1,9 @@
 package com.easymusic.mappers;
 
+import com.easymusic.entity.po.SysDict;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 系统字典 数据库操作接口
@@ -25,4 +28,5 @@ public interface SysDictMapper<T,P> extends BaseMapper<T,P> {
 	 T selectByDictId(@Param("dictId") Integer dictId);
 
 
+	void changeSort(@Param("sysDictList")List<SysDict> sysDictList);
 }

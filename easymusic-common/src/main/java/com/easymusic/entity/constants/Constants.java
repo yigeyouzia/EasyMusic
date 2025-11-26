@@ -8,6 +8,8 @@ public class Constants {
 
     public static final String REDIS_KEY_PREFIX = "easymusic:";
 
+    public static final String ZERO_STR = "0";
+
     public static final Integer LENGTH_5 = 5;
 
     public static final Integer LENGTH_8 = 8;
@@ -70,4 +72,6 @@ public class Constants {
     // 超时订单队列
     public static final String REDIS_KEY_ORDER_DELAY_QUEUE = REDIS_KEY_PREFIX + "order:delay:queue:";
 
+    // 字典 系统配置
+    public static final String REDIS_KEY_SYS_DICT = REDIS_KEY_PREFIX + "sysdict:";
 }

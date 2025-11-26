@@ -12,61 +12,73 @@ import java.util.List;
  */
 public interface SysDictService {
 
-	/**
-	 * 根据条件查询列表
-	 */
-	List<SysDict> findListByParam(SysDictQuery param);
+    /**
+     * 根据条件查询列表
+     */
+    List<SysDict> findListByParam(SysDictQuery param);
 
-	/**
-	 * 根据条件查询列表
-	 */
-	Integer findCountByParam(SysDictQuery param);
+    /**
+     * 根据条件查询列表
+     */
+    Integer findCountByParam(SysDictQuery param);
 
-	/**
-	 * 分页查询
-	 */
-	PaginationResultVO<SysDict> findListByPage(SysDictQuery param);
+    /**
+     * 分页查询
+     */
+    PaginationResultVO<SysDict> findListByPage(SysDictQuery param);
 
-	/**
-	 * 新增
-	 */
-	Integer add(SysDict bean);
+    /**
+     * 新增
+     */
+    Integer add(SysDict bean);
 
-	/**
-	 * 批量新增
-	 */
-	Integer addBatch(List<SysDict> listBean);
+    /**
+     * 批量新增
+     */
+    Integer addBatch(List<SysDict> listBean);
 
-	/**
-	 * 批量新增/修改
-	 */
-	Integer addOrUpdateBatch(List<SysDict> listBean);
+    /**
+     * 批量新增/修改
+     */
+    Integer addOrUpdateBatch(List<SysDict> listBean);
 
-	/**
-	 * 多条件更新
-	 */
-	Integer updateByParam(SysDict bean,SysDictQuery param);
+    /**
+     * 多条件更新
+     */
+    Integer updateByParam(SysDict bean, SysDictQuery param);
 
-	/**
-	 * 多条件删除
-	 */
-	Integer deleteByParam(SysDictQuery param);
+    /**
+     * 多条件删除
+     */
+    Integer deleteByParam(SysDictQuery param);
 
-	/**
-	 * 根据DictId查询对象
-	 */
-	SysDict getSysDictByDictId(Integer dictId);
-
-
-	/**
-	 * 根据DictId修改
-	 */
-	Integer updateSysDictByDictId(SysDict bean,Integer dictId);
+    /**
+     * 根据DictId查询对象
+     */
+    SysDict getSysDictByDictId(Integer dictId);
 
 
-	/**
-	 * 根据DictId删除
-	 */
-	Integer deleteSysDictByDictId(Integer dictId);
+    /**
+     * 根据DictId修改
+     */
+    Integer updateSysDictByDictId(SysDict bean, Integer dictId);
+
+
+    /**
+     * 根据DictId删除
+     */
+    Integer deleteSysDictByDictId(Integer dictId);
+
+    void saveSysDict(SysDict sysDict);
+
+    void delSysDictByDictId(Integer dictId);
+
+    /**
+     * 修改排序
+     *
+     * @param dictPcode 父节点id
+     * @param dictIds   修改后的子节点id列表
+     */
+    void changeSort(String dictPcode, String dictIds);
 
 }

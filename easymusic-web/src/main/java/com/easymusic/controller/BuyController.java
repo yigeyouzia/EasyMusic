@@ -80,9 +80,9 @@ public class BuyController extends ABaseController {
      * 付款码支付
      *
      * @param checkCodeKey 验证码的key
-     * @param checkCode 验证码
-     * @param payCode 付款码 支付码
-     * @param productId 商品id
+     * @param checkCode    验证码
+     * @param payCode      付款码 支付码
+     * @param productId    商品id
      * @return
      */
     @RequestMapping("/buyByPayCode")
@@ -101,5 +101,20 @@ public class BuyController extends ABaseController {
         } finally {
             redisComponent.cleanCheckCode(checkCodeKey);
         }
+    }
+
+    /**
+     * 付款后点击下方  我已支付
+     *
+     * @param orderId
+     * @return
+     */
+    @RequestMapping("/havePay")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO havePay(@NotEmpty String orderId) {
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        Integer integral = payOrderInfoService.havePay(tokenUserInfo.getUserId(), orderId);
+        tokenUserInfo.setIntegral(integral);
+        return getSuccessResponseVO(tokenUserInfo);
     }
 }

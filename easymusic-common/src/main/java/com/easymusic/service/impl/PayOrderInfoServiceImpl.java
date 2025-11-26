@@ -410,7 +410,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
 
-        if (productInfo.getPrice().compareTo(payCodeInfo.getAmount()) != 0){
+        if (productInfo.getPrice().compareTo(payCodeInfo.getAmount()) != 0) {
             throw new BusinessException("支付码金额与商品金额不一致");
         }
 
@@ -450,5 +450,23 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
                 productInfo.getIntegral(),
                 productInfo.getPrice());
 
+    }
+
+    /**
+     * 我已支付
+     *
+     * @param userId
+     * @param orderId
+     * @return
+     */
+    @Override
+    public Integer havePay(String userId, String orderId) {
+        PayOrderInfo payOrderInfo = getPayOrderInfoByOrderId(orderId);
+        if(!payOrderInfo.getStatus().equals(PayOrderStatusEnum.HAVE_PAY.getStatus())){
+            return null;
+        }
+
+        UserInfo userInfo = userInfoService.getUserInfoByUserId(userId);
+        return userInfo.getIntegral();
     }
 }

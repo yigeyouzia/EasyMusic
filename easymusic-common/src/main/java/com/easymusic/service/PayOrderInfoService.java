@@ -101,4 +101,6 @@ public interface PayOrderInfoService {
     Integer checkPay(String userId, String orderId);
 
     void buyByPayCode(String productId, String payCode, String userId);
+
+    Integer havePay(String userId, String orderId);
 }

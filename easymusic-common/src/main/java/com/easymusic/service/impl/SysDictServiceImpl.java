@@ -15,7 +15,10 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -205,5 +208,25 @@ public class SysDictServiceImpl implements SysDictService {
         }
         sysDictMapper.changeSort(sysDictList);
         saveDict2Redis(dictPcode);
+    }
+
+    @Override
+    public Map<String, List<SysDict>> getDictFromCache() {
+        Map<String, List<SysDict>> allData = redisComponent.getAllDict();
+        if(allData == null || allData.isEmpty()) {
+            List<SysDict> sysDictList = sysDictMapper.selectList(new SysDictQuery());
+            // 根据pcode分组
+            Map<String, List<SysDict>> tempMap = sysDictList.stream().collect(Collectors.groupingBy(SysDict::getDictPcode));
+            tempMap.forEach((k, v) -> {
+                // 如果是二级节点
+                if(!Constants.ZERO_STR.equals(k)) {
+                    // 排序 保存到redis
+                    redisComponent.saveDict(k, v.stream().sorted(Comparator.comparing(SysDict::getSort)).collect(Collectors.toList()));
+                }
+            });
+
+            allData = redisComponent.getAllDict();
+        }
+        return allData;
     }
 }

@@ -1,10 +1,11 @@
 package com.easymusic.service;
 
-import java.util.List;
-
-import com.easymusic.entity.query.MusicCreationQuery;
+import com.easymusic.entity.dto.MusicSettingDTO;
 import com.easymusic.entity.po.MusicCreation;
+import com.easymusic.entity.query.MusicCreationQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+
+import java.util.List;
 
 
 /**
@@ -69,4 +70,5 @@ public interface MusicCreationService {
 	 */
 	Integer deleteMusicCreationByCreationId(String creationId);
 
+    List<String> createMusic(MusicCreation creation, MusicSettingDTO musicSettingDTO);
 }

@@ -1,19 +1,18 @@
 package com.easymusic.service.impl;
 
-import java.util.List;
-
-import jakarta.annotation.Resource;
-
-import org.springframework.stereotype.Service;
-
+import com.easymusic.entity.dto.MusicSettingDTO;
 import com.easymusic.entity.enums.PageSize;
-import com.easymusic.entity.query.MusicCreationQuery;
 import com.easymusic.entity.po.MusicCreation;
-import com.easymusic.entity.vo.PaginationResultVO;
+import com.easymusic.entity.query.MusicCreationQuery;
 import com.easymusic.entity.query.SimplePage;
+import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.mappers.MusicCreationMapper;
 import com.easymusic.service.MusicCreationService;
 import com.easymusic.utils.StringTools;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 /**
@@ -126,5 +125,10 @@ public class MusicCreationServiceImpl implements MusicCreationService {
 	@Override
 	public Integer deleteMusicCreationByCreationId(String creationId) {
 		return this.musicCreationMapper.deleteByCreationId(creationId);
+	}
+
+	@Override
+	public List<String> createMusic(MusicCreation creation, MusicSettingDTO musicSettingDTO) {
+		return List.of();
 	}
 }

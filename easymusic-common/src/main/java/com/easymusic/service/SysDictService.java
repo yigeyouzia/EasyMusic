@@ -5,6 +5,7 @@ import com.easymusic.entity.query.SysDictQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -80,5 +81,7 @@ public interface SysDictService {
      * @param dictIds   修改后的子节点id列表
      */
     void changeSort(String dictPcode, String dictIds);
+
+    Map<String, List<SysDict>> getDictFromCache();
 
 }

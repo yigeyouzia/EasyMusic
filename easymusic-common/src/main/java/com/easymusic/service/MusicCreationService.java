@@ -70,5 +70,5 @@ public interface MusicCreationService {
 	 */
 	Integer deleteMusicCreationByCreationId(String creationId);
 
-    List<String> createMusic(MusicCreation creation, MusicSettingDTO musicSettingDTO);
+    List<String> createMusic(MusicCreation creation, MusicSettingDTO settingDTO);
 }

@@ -1,6 +1,6 @@
 package com.easymusic.api;
 
-import com.easymusic.entity.dto.MusicCreateResultDTO;
+import com.easymusic.entity.dto.MusicCreationResultDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public interface MusicCreateApi {
      * @param itemId 音乐Id
      * @return
      */
-    default MusicCreateResultDTO musicQuery(String itemId) {
+    default MusicCreationResultDTO musicQuery(String itemId) {
         return null;
     }
 
@@ -44,7 +44,7 @@ public interface MusicCreateApi {
         return new ArrayList<>();
     }
 
-    default MusicCreateResultDTO pureMusicQuery(String itemId) {
+    default MusicCreationResultDTO pureMusicQuery(String itemId) {
         return null;
     }
 
@@ -55,7 +55,7 @@ public interface MusicCreateApi {
      * @param responseBody 返回体
      * @return
      */
-    default MusicCreateResultDTO createMusicNotify(Integer musicType, String responseBody) {
+    default MusicCreationResultDTO createMusicNotify(Integer musicType, String responseBody) {
         return null;
     }
 }

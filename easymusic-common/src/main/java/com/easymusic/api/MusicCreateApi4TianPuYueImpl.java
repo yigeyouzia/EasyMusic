@@ -1,8 +1,9 @@
 package com.easymusic.api;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
 import com.easymusic.entity.config.AppConfig;
-import com.easymusic.entity.dto.MusicCreateResultDTO;
+import com.easymusic.entity.dto.MusicCreationResultDTO;
 import com.easymusic.entity.enums.MusicTypeEnum;
 import com.easymusic.utils.JsonUtils;
 import com.easymusic.utils.OKHttpUtils;
@@ -10,6 +11,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -70,10 +72,51 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
         return itemList;
     }
 
-    @Override
-    public MusicCreateResultDTO musicQuery(String itemId) {
-        return MusicCreateApi.super.musicQuery(itemId);
+    /**
+     * 解析天谱乐api返回结果
+     *
+     * @return
+     */
+    private MusicCreationResultDTO getMusicCreateResultDTO(JSONObject jsonObject, MusicTypeEnum musicTypeEnum) {
+        if (jsonObject == null) {
+            return null;
+        }
+
+        List<MusicCreationResultDTO.Lyrics> lyricsList = new ArrayList<>();
+        if (MusicTypeEnum.MUSIC.equals(musicTypeEnum)) {
+            if (jsonObject.get("lyrics_sections") == null) {
+                return null;
+            }
+            lyricsList = (List<MusicCreationResultDTO.Lyrics>) JsonUtils
+                    .convertJsonArray2List(JsonUtils.convertObj2Json(jsonObject.get("lyrics_sections")),
+                            MusicCreationResultDTO.Lyrics.class);
+        }
+        MusicCreationResultDTO resultDTO = new MusicCreationResultDTO();
+        resultDTO.setTaskId(jsonObject.getString("item_id"));
+        resultDTO.setTitle(jsonObject.getString("title"));
+        resultDTO.setAudioUrl(jsonObject.getString("audio_url"));
+        resultDTO.setAudioHiUrl(jsonObject.getString("audio_hi_url"));
+        resultDTO.setDuration(jsonObject.getIntValue("duration"));
+        resultDTO.setLyricsList(lyricsList);
+        return resultDTO;
     }
+
+    @Override
+    public MusicCreationResultDTO musicQuery(String itemId) {
+        HashMap<String, String> header = getHeader();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("item_ids", new String[]{itemId});
+        String jsonParams = JsonUtils.convertObj2Json(params);
+
+        String response = OKHttpUtils.postRequest4Json(appConfig.getTianpuyueApiDomain() + URL_QUERY_MUSIC,
+                header,
+                jsonParams);
+        log.info("请求天谱乐api查询音乐返回结果：{}", response);
+        // 支取第一个
+        JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.songs[0]");
+        return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.MUSIC);
+    }
+
 
     @Override
     public List<String> createPureMusic(String model, String prompt) {
@@ -84,7 +127,7 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
         params.put("callback_url", String.format(CALL_BACL_URL, MusicTypeEnum.PURE.getType()));
         String jsonParams = JsonUtils.convertObj2Json(params);
 
-        String response = OKHttpUtils.postRequest4Json(appConfig.getTianpuyueApiDomain() + URL_QUERY_PURE_MUSIC,
+        String response = OKHttpUtils.postRequest4Json(appConfig.getTianpuyueApiDomain() + URL_CREATE_PURE_MUSIC,
                 header,
                 jsonParams);
         log.info("天谱乐纯音乐api生成音乐返回结果：{}", response);
@@ -93,12 +136,38 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
     }
 
     @Override
-    public MusicCreateResultDTO pureMusicQuery(String itemId) {
-        return MusicCreateApi.super.pureMusicQuery(itemId);
+    public MusicCreationResultDTO pureMusicQuery(String itemId) {
+        HashMap<String, String> header = getHeader();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("item_ids", new String[]{itemId});
+        String jsonParams = JsonUtils.convertObj2Json(params);
+
+        String response = OKHttpUtils.postRequest4Json(appConfig.getTianpuyueApiDomain() + URL_QUERY_PURE_MUSIC,
+                header,
+                jsonParams);
+        log.info("请求天谱乐api查询音乐返回结果：{}", response);
+        // 支取第一个
+        JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.instrumentals[0]");
+        return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.PURE);
     }
 
+    /**
+     * 天谱乐回调api实现
+     *
+     * @param musicType    音乐类型
+     * @param response 返回体
+     * @return
+     */
     @Override
-    public MusicCreateResultDTO createMusicNotify(Integer musicType, String responseBody) {
-        return MusicCreateApi.super.createMusicNotify(musicType, responseBody);
+    public MusicCreationResultDTO createMusicNotify(Integer musicType, String response) {
+        MusicTypeEnum musicTypeEnum = MusicTypeEnum.getByType(musicType);
+        if (MusicTypeEnum.MUSIC == musicTypeEnum) {
+            JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.songs[0]");
+            return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.MUSIC);
+        } else if (MusicTypeEnum.PURE == musicTypeEnum) {
+            JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.instrumentals[0]");
+            return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.PURE);
+        }
+        return null;
     }
 }

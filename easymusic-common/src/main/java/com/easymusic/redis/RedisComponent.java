@@ -1,6 +1,7 @@
 package com.easymusic.redis;
 
 import com.easymusic.entity.constants.Constants;
+import com.easymusic.entity.dto.MusicTaskDTO;
 import com.easymusic.entity.dto.TokenUserInfo4AdminDTO;
 import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.po.SysDict;
@@ -81,11 +82,12 @@ public class RedisComponent {
     }
 
     /**
+     * 微信支付
      * 延时队列
      * 添加订单 orderId
      *
      * @param delayMin 延迟时间 单位分钟
-     * @param orderId 订单号
+     * @param orderId  订单号
      */
     public void addOrder2DelayQueue(Integer delayMin, String orderId) {
         long executeTime = System.currentTimeMillis() + delayMin * 60 * 1000;
@@ -100,6 +102,24 @@ public class RedisComponent {
         return redisUtils.zsetAddRemove(Constants.REDIS_KEY_ORDER_DELAY_QUEUE, orderId);
     }
 
+
+    /**
+     * 30s
+     * 天谱乐
+     * 延时队列
+     */
+    public void addMusicCreateTask(MusicTaskDTO musicTaskDto) {
+        long executeTime = System.currentTimeMillis() + 30 * 1000;
+        redisUtils.zsetAdd(Constants.REDIS_KEY_MUSIC_CREATE_QUEUE, musicTaskDto, executeTime);
+    }
+
+    public Set<MusicTaskDTO> getMusicTaskDto() {
+        return redisUtils.zsetRangeByScore(Constants.REDIS_KEY_MUSIC_CREATE_QUEUE, 0, System.currentTimeMillis());
+    }
+
+    public Long removeMusicTaskDto(MusicTaskDTO taskDto) {
+        return redisUtils.zsetAddRemove(Constants.REDIS_KEY_MUSIC_CREATE_QUEUE, taskDto);
+    }
     // admin *********************************************************
 
     /**
@@ -132,7 +152,7 @@ public class RedisComponent {
      * 键：父节点
      * 值：子节点列表
      *
-     * @param dictPcode 父节点
+     * @param dictPcode   父节点
      * @param sysDictList 子节点列表
      */
     public void saveDict(String dictPcode, List<SysDict> sysDictList) {

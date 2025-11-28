@@ -88,4 +88,6 @@ public interface MusicInfoService {
 	Integer deleteMusicInfoByTaskId(String taskId);
 
 	void updateMusicCount(String musicId);
+
+	void musicCreateNotify(Integer musicType, String responseJson);
 }

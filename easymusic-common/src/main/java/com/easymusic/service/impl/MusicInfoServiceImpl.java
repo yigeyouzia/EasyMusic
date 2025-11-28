@@ -1,5 +1,6 @@
 package com.easymusic.service.impl;
 
+import com.easymusic.api.MusicCreateApi;
 import com.easymusic.entity.enums.PageSize;
 import com.easymusic.entity.po.MusicInfo;
 import com.easymusic.entity.po.UserInfo;
@@ -23,146 +24,160 @@ import java.util.List;
 @Service("musicInfoService")
 public class MusicInfoServiceImpl implements MusicInfoService {
 
-	@Resource
-	private MusicInfoMapper<MusicInfo, MusicInfoQuery> musicInfoMapper;
+    @Resource
+    private MusicInfoMapper<MusicInfo, MusicInfoQuery> musicInfoMapper;
 
-	@Resource
-	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+    @Resource
+    private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
 
-	/**
-	 * 根据条件查询列表
-	 */
-	@Override
-	public List<MusicInfo> findListByParam(MusicInfoQuery param) {
-		return this.musicInfoMapper.selectList(param);
-	}
+    @Resource
+    private MusicCreateApi musicCreateApi;
 
-	/**
-	 * 根据条件查询列表
-	 */
-	@Override
-	public Integer findCountByParam(MusicInfoQuery param) {
-		return this.musicInfoMapper.selectCount(param);
-	}
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public List<MusicInfo> findListByParam(MusicInfoQuery param) {
+        return this.musicInfoMapper.selectList(param);
+    }
 
-	/**
-	 * 分页查询方法
-	 */
-	@Override
-	public PaginationResultVO<MusicInfo> findListByPage(MusicInfoQuery param) {
-		int count = this.findCountByParam(param);
-		int pageSize = param.getPageSize() == null ? PageSize.SIZE15.getSize() : param.getPageSize();
+    /**
+     * 根据条件查询列表
+     */
+    @Override
+    public Integer findCountByParam(MusicInfoQuery param) {
+        return this.musicInfoMapper.selectCount(param);
+    }
 
-		SimplePage page = new SimplePage(param.getPageNo(), count, pageSize);
-		param.setSimplePage(page);
-		List<MusicInfo> list = this.findListByParam(param);
-		PaginationResultVO<MusicInfo> result = new PaginationResultVO(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
-		return result;
-	}
+    /**
+     * 分页查询方法
+     */
+    @Override
+    public PaginationResultVO<MusicInfo> findListByPage(MusicInfoQuery param) {
+        int count = this.findCountByParam(param);
+        int pageSize = param.getPageSize() == null ? PageSize.SIZE15.getSize() : param.getPageSize();
 
-	/**
-	 * 新增
-	 */
-	@Override
-	public Integer add(MusicInfo bean) {
-		return this.musicInfoMapper.insert(bean);
-	}
+        SimplePage page = new SimplePage(param.getPageNo(), count, pageSize);
+        param.setSimplePage(page);
+        List<MusicInfo> list = this.findListByParam(param);
+        PaginationResultVO<MusicInfo> result = new PaginationResultVO(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+        return result;
+    }
 
-	/**
-	 * 批量新增
-	 */
-	@Override
-	public Integer addBatch(List<MusicInfo> listBean) {
-		if (listBean == null || listBean.isEmpty()) {
-			return 0;
-		}
-		return this.musicInfoMapper.insertBatch(listBean);
-	}
+    /**
+     * 新增
+     */
+    @Override
+    public Integer add(MusicInfo bean) {
+        return this.musicInfoMapper.insert(bean);
+    }
 
-	/**
-	 * 批量新增或者修改
-	 */
-	@Override
-	public Integer addOrUpdateBatch(List<MusicInfo> listBean) {
-		if (listBean == null || listBean.isEmpty()) {
-			return 0;
-		}
-		return this.musicInfoMapper.insertOrUpdateBatch(listBean);
-	}
+    /**
+     * 批量新增
+     */
+    @Override
+    public Integer addBatch(List<MusicInfo> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.musicInfoMapper.insertBatch(listBean);
+    }
 
-	/**
-	 * 多条件更新
-	 */
-	@Override
-	public Integer updateByParam(MusicInfo bean, MusicInfoQuery param) {
-		StringTools.checkParam(param);
-		return this.musicInfoMapper.updateByParam(bean, param);
-	}
+    /**
+     * 批量新增或者修改
+     */
+    @Override
+    public Integer addOrUpdateBatch(List<MusicInfo> listBean) {
+        if (listBean == null || listBean.isEmpty()) {
+            return 0;
+        }
+        return this.musicInfoMapper.insertOrUpdateBatch(listBean);
+    }
 
-	/**
-	 * 多条件删除
-	 */
-	@Override
-	public Integer deleteByParam(MusicInfoQuery param) {
-		StringTools.checkParam(param);
-		return this.musicInfoMapper.deleteByParam(param);
-	}
+    /**
+     * 多条件更新
+     */
+    @Override
+    public Integer updateByParam(MusicInfo bean, MusicInfoQuery param) {
+        StringTools.checkParam(param);
+        return this.musicInfoMapper.updateByParam(bean, param);
+    }
 
-	/**
-	 * 根据MusicId获取对象
-	 */
-	@Override
-	public MusicInfo getMusicInfoByMusicId(String musicId) {
-		MusicInfo musicInfo = musicInfoMapper.selectByMusicId(musicId);
-		if (musicInfo != null) {
-			UserInfo userInfo = userInfoMapper.selectByUserId(musicInfo.getUserId());
-			musicInfo.setNickName(userInfo.getNickName());
-		}
-		return musicInfo;
-	}
+    /**
+     * 多条件删除
+     */
+    @Override
+    public Integer deleteByParam(MusicInfoQuery param) {
+        StringTools.checkParam(param);
+        return this.musicInfoMapper.deleteByParam(param);
+    }
 
-	/**
-	 * 根据MusicId修改
-	 */
-	@Override
-	public Integer updateMusicInfoByMusicId(MusicInfo bean, String musicId) {
-		return this.musicInfoMapper.updateByMusicId(bean, musicId);
-	}
+    /**
+     * 根据MusicId获取对象
+     */
+    @Override
+    public MusicInfo getMusicInfoByMusicId(String musicId) {
+        MusicInfo musicInfo = musicInfoMapper.selectByMusicId(musicId);
+        if (musicInfo != null) {
+            UserInfo userInfo = userInfoMapper.selectByUserId(musicInfo.getUserId());
+            musicInfo.setNickName(userInfo.getNickName());
+        }
+        return musicInfo;
+    }
 
-	/**
-	 * 根据MusicId删除
-	 */
-	@Override
-	public Integer deleteMusicInfoByMusicId(String musicId) {
-		return this.musicInfoMapper.deleteByMusicId(musicId);
-	}
+    /**
+     * 根据MusicId修改
+     */
+    @Override
+    public Integer updateMusicInfoByMusicId(MusicInfo bean, String musicId) {
+        return this.musicInfoMapper.updateByMusicId(bean, musicId);
+    }
 
-	/**
-	 * 根据TaskId获取对象
-	 */
-	@Override
-	public MusicInfo getMusicInfoByTaskId(String taskId) {
-		return this.musicInfoMapper.selectByTaskId(taskId);
-	}
+    /**
+     * 根据MusicId删除
+     */
+    @Override
+    public Integer deleteMusicInfoByMusicId(String musicId) {
+        return this.musicInfoMapper.deleteByMusicId(musicId);
+    }
 
-	/**
-	 * 根据TaskId修改
-	 */
-	@Override
-	public Integer updateMusicInfoByTaskId(MusicInfo bean, String taskId) {
-		return this.musicInfoMapper.updateByTaskId(bean, taskId);
-	}
+    /**
+     * 根据TaskId获取对象
+     */
+    @Override
+    public MusicInfo getMusicInfoByTaskId(String taskId) {
+        return this.musicInfoMapper.selectByTaskId(taskId);
+    }
 
-	/**
-	 * 根据TaskId删除
-	 */
-	@Override
-	public Integer deleteMusicInfoByTaskId(String taskId) {
-		return this.musicInfoMapper.deleteByTaskId(taskId);
-	}
+    /**
+     * 根据TaskId修改
+     */
+    @Override
+    public Integer updateMusicInfoByTaskId(MusicInfo bean, String taskId) {
+        return this.musicInfoMapper.updateByTaskId(bean, taskId);
+    }
 
-	@Override
-	public void updateMusicCount(String musicId) {
-		musicInfoMapper.updateMusicCount(musicId);
-	}
+    /**
+     * 根据TaskId删除
+     */
+    @Override
+    public Integer deleteMusicInfoByTaskId(String taskId) {
+        return this.musicInfoMapper.deleteByTaskId(taskId);
+    }
+
+    @Override
+    public void updateMusicCount(String musicId) {
+        musicInfoMapper.updateMusicCount(musicId);
+    }
+
+    /**
+     * 天谱乐创建音乐回调通知
+     *
+     * @param musicType
+     * @param responseJson
+     */
+    @Override
+    public void musicCreateNotify(Integer musicType, String responseJson) {
+        musicCreateApi.createMusicNotify(musicType, responseJson);
+    }
 }

@@ -1,18 +1,25 @@
 package com.easymusic.service.impl;
 
+import com.easymusic.api.MusicCreateApi;
+import com.easymusic.entity.config.AppConfig;
 import com.easymusic.entity.constants.Constants;
 import com.easymusic.entity.dto.MusicSettingDTO;
+import com.easymusic.entity.dto.MusicTaskDTO;
 import com.easymusic.entity.enums.*;
 import com.easymusic.entity.po.MusicCreation;
+import com.easymusic.entity.po.MusicInfo;
 import com.easymusic.entity.po.SysDict;
 import com.easymusic.entity.query.MusicCreationQuery;
+import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.query.SimplePage;
 import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.exception.BusinessException;
 import com.easymusic.mappers.MusicCreationMapper;
+import com.easymusic.mappers.MusicInfoMapper;
 import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.MusicCreationService;
 import com.easymusic.service.UserInfoService;
+import com.easymusic.spring.SpringContext;
 import com.easymusic.utils.JsonUtils;
 import com.easymusic.utils.StringTools;
 import jakarta.annotation.Resource;
@@ -22,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +53,12 @@ public class MusicCreationServiceImpl implements MusicCreationService {
 
     @Resource
     private UserIntegralRecordServiceImpl userIntegralRecordService;
+
+    @Resource
+    private AppConfig appConfig;
+
+    @Resource
+    private MusicInfoMapper<MusicInfo, MusicInfoQuery> musicInfoMapper;
 
     /**
      * 根据条件查询列表
@@ -158,7 +172,6 @@ public class MusicCreationServiceImpl implements MusicCreationService {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         ModelInfo modelInfo = getModelInfo(musicTypeEnum, creation.getModel());
-        String model = modelInfo.model;
         // 音乐下面的配置
         List<SysDict> sysDictSubList = redisComponent.getDictSubList(musicTypeEnum.getDictCode());
 
@@ -172,7 +185,6 @@ public class MusicCreationServiceImpl implements MusicCreationService {
 
         String creationId = StringTools.getRandomString(Constants.LENGTH_14);
         int integral = Integer.parseInt(sysDict.getDictValue()); // 积分
-        String apiCode = modelInfo.apiCode;
 
         // 扣减积分
         userIntegralRecordService.changeUserIntegral(UserIntegralRecordTypeEnum.CREATE_MUSIC, creationId, creation.getUserId(), -integral, null);
@@ -203,13 +215,54 @@ public class MusicCreationServiceImpl implements MusicCreationService {
             } catch (Exception e) {
                 log.error("高级模式提示词处理失败", e);
             }
-
-            // TODO 调用高级模式api
-        } else {
-            // TODO 普通模式调用引用api
         }
 
-        return List.of();
+        // 获取业务bean
+        String apiCode = modelInfo.apiCode;
+        MusicCreateApi musicCreateApi = (MusicCreateApi) SpringContext.getBean(apiCode);
+
+        List<String> itemIds;
+        String model = modelInfo.model;
+
+        if (MusicTypeEnum.MUSIC.getType().equals(creation.getMusicType())) {
+            // 3.调用接口生成音乐
+            itemIds = musicCreateApi.createMusic(model, prompt, creation.getLyrics());
+        } else {
+            itemIds = musicCreateApi.createPureMusic(model, prompt);
+        }
+
+        if (itemIds == null || itemIds.isEmpty()) {
+            throw new BusinessException("生成音乐失败");
+        }
+
+        List<MusicInfo> musicInfoList = new ArrayList<>();
+        List<String> musicIdList = new ArrayList<>();
+        for (String item : itemIds) {
+            MusicInfo musicInfo = new MusicInfo();
+            musicInfo.setMusicId(StringTools.getRandomString(Constants.LENGTH_12));
+            musicInfo.setUserId(creation.getUserId());
+            musicInfo.setCreationId(creationId);
+            musicInfo.setGoodCount(0);
+            musicInfo.setPlayCount(0);
+            musicInfo.setCommendType(CommendTypeEnum.NOT_COMMEND.getStatus());
+            musicInfo.setMusicStatus(MusicStatusEnum.CREATING.getStatus());
+            musicInfo.setTaskId(item);
+            musicInfoList.add(musicInfo);
+            musicIdList.add(musicInfo.getMusicId());
+
+            // 是否轮询查询音乐状态
+            if (appConfig.getAutoCheckMusic()) {
+                MusicTaskDTO taskDTO = new MusicTaskDTO();
+                taskDTO.setApiCode(apiCode);
+                taskDTO.setMusicId(musicInfo.getMusicId());
+                taskDTO.setTaskId(item);
+                taskDTO.setMusicType(creation.getMusicType());
+                redisComponent.addMusicCreateTask(taskDTO);
+            }
+
+        }
+        musicInfoMapper.insertBatch(musicInfoList);
+        return musicIdList;
     }
 
     // 模型和api前缀

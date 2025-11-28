@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 
 /**
- * 天谱乐api 查询音乐返回数据
+ * 创建音乐返回DTO
  * @author cyt
  * * @date 2025/11/28 18:14:19
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MusicCreateResultDTO implements Serializable {
+public class MusicTaskDTO implements Serializable {
     private String musicId;
     private String taskId;
     private String apiCode;

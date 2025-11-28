@@ -76,4 +76,8 @@ public class Constants {
 
     // 字典 系统配置
     public static final String REDIS_KEY_SYS_DICT = REDIS_KEY_PREFIX + "sysdict:";
+
+    // 歌曲创建队列
+    public static final String REDIS_KEY_MUSIC_CREATE_QUEUE = REDIS_KEY_PREFIX + "create:queue:";
+
 }

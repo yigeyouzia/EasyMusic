@@ -20,7 +20,7 @@ import com.easymusic.mappers.PayCodeInfoMapper;
 import com.easymusic.mappers.PayOrderInfoMapper;
 import com.easymusic.mappers.ProductInfoMapper;
 import com.easymusic.redis.RedisComponent;
-import com.easymusic.service.PayChannelService;
+import com.easymusic.api.PayChannelService;
 import com.easymusic.service.PayOrderInfoService;
 import com.easymusic.service.UserInfoService;
 import com.easymusic.service.UserIntegralRecordService;
@@ -235,7 +235,7 @@ public class PayOrderInfoServiceImpl implements PayOrderInfoService {
 
 
     /**
-     * 前端主动轮询订单支付状态
+     * 第三方自动回调
      *
      * @param payType 支付方式
      * @param params

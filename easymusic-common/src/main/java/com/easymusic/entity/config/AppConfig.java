@@ -17,6 +17,9 @@ public class AppConfig {
     @Value("${admin.account:}")
     private String adminAccount;
 
+    @Value("${web.domain:}")
+    private String webDomain;
+
     @Value("${admin.password:}")
     private String adminPassword;
 
@@ -57,6 +60,30 @@ public class AppConfig {
 
     @Value("${auto.checkMusic:false}")
     private Boolean autoCheckMusic;
+
+    /**
+     * AI接口相关
+     */
+
+    // 天谱乐
+    @Value("${tianpuyue.api.key:}")
+    private String tianpuyueApiKey;
+
+    @Value("${tianpuyue.api.domain:}")
+    private String tianpuyueApiDomain;
+
+
+    public String getWebDomain() {
+        return webDomain;
+    }
+
+    public String getTianpuyueApiDomain() {
+        return tianpuyueApiDomain;
+    }
+
+    public String getTianpuyueApiKey() {
+        return tianpuyueApiKey;
+    }
 
     public String getPayWechatAppId() {
         return payWechatAppId;

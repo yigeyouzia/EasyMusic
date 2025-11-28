@@ -1,4 +1,4 @@
-package com.easymusic.service.impl;
+package com.easymusic.api;
 
 /**
  * @author cyt
@@ -12,7 +12,6 @@ import com.easymusic.entity.enums.DateTimePatternEnum;
 import com.easymusic.entity.enums.PayOrderTypeEnum;
 import com.easymusic.entity.enums.PayTypeEnum;
 import com.easymusic.exception.BusinessException;
-import com.easymusic.service.PayChannelService;
 import com.easymusic.utils.DateUtil;
 import com.easymusic.utils.JsonUtils;
 import com.easymusic.utils.OKHttpUtils;
@@ -76,7 +75,7 @@ public class PayChannel4WechatImpl implements PayChannelService {
         paramsMap.put("time_expire", DateUtil.format(new Date(System.currentTimeMillis() + 1000 * 60 * Constants.ORDER_TIMEOUT_MIN),
                 DateTimePatternEnum.YYYY_MM_DDTHH_MM_SS.getPattern()));
 
-        paramsMap.put("notify_url", appConfig.getPayDomain() + String.format(URL_NOTIFY, PayOrderTypeEnum.PAY_WECHAT.getType()));
+        paramsMap.put("notify_url", appConfig.getWebDomain() + String.format(URL_NOTIFY, PayOrderTypeEnum.PAY_WECHAT.getType()));
         Map<String, Object> amountMap = new HashMap<>();
         amountMap.put("total", StringTools.convertYuan2fenBigDecimal(amount));
         amountMap.put("currency", CURRENCY);

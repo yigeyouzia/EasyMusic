@@ -25,11 +25,12 @@ public interface MusicCreateApi {
 
     /**
      * 查询音乐
+     * 用于redis主动轮询方法
      *
-     * @param itemId 音乐Id
+     * @param taskId 音乐Id 天谱乐返回
      * @return
      */
-    default MusicCreationResultDTO musicQuery(String itemId) {
+    default MusicCreationResultDTO musicQuery(String taskId) {
         return null;
     }
 
@@ -44,7 +45,7 @@ public interface MusicCreateApi {
         return new ArrayList<>();
     }
 
-    default MusicCreationResultDTO pureMusicQuery(String itemId) {
+    default MusicCreationResultDTO pureMusicQuery(String taskId) {
         return null;
     }
 

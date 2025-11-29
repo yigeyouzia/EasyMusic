@@ -40,6 +40,8 @@ public class Constants {
 
     public static final String[] IMAGES_SUFFIX = {".jpg", ".png", ".jpeg", ".gif", ".bmp", ".svg", ".webp", ".ico"};
 
+    public static final String AUDIO_SUFFIX = ".mp3";
+
 
     /**
      * redis key *********************

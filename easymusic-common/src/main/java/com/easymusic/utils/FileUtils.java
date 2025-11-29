@@ -75,4 +75,18 @@ public class FileUtils {
         return null;
     }
 
+    public String downloadFile(String url, String suffix) {
+        String folderName = DateUtil.format(new Date(), DateTimePatternEnum.YYYYMM.getPattern());
+        String folderPath = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + folderName + "/";
+
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+        String fileName = StringTools.getRandomString(Constants.LENGTH_30) + suffix;
+        String filePath = folderPath + fileName;
+        OKHttpUtils.download(url, filePath);
+        return folderName + "/" + fileName;
+    }
+
 }

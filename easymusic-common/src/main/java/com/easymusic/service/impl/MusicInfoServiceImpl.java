@@ -1,7 +1,10 @@
 package com.easymusic.service.impl;
 
 import com.easymusic.api.MusicCreateApi;
-import com.easymusic.entity.enums.PageSize;
+import com.easymusic.entity.constants.Constants;
+import com.easymusic.entity.dto.MusicCreationResultDTO;
+import com.easymusic.entity.dto.MusicTaskDTO;
+import com.easymusic.entity.enums.*;
 import com.easymusic.entity.po.MusicInfo;
 import com.easymusic.entity.po.UserInfo;
 import com.easymusic.entity.query.MusicInfoQuery;
@@ -10,18 +13,26 @@ import com.easymusic.entity.query.UserInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.mappers.MusicInfoMapper;
 import com.easymusic.mappers.UserInfoMapper;
+import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.MusicInfoService;
+import com.easymusic.spring.SpringContext;
+import com.easymusic.utils.FileUtils;
+import com.easymusic.utils.JsonUtils;
 import com.easymusic.utils.StringTools;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 
 /**
  * 音乐信息 业务接口实现
  */
 @Service("musicInfoService")
+@Slf4j
 public class MusicInfoServiceImpl implements MusicInfoService {
 
     @Resource
@@ -31,7 +42,10 @@ public class MusicInfoServiceImpl implements MusicInfoService {
     private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
 
     @Resource
-    private MusicCreateApi musicCreateApi;
+    private FileUtils fileUtils;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     /**
      * 根据条件查询列表
@@ -178,6 +192,96 @@ public class MusicInfoServiceImpl implements MusicInfoService {
      */
     @Override
     public void musicCreateNotify(Integer musicType, String responseJson) {
-        musicCreateApi.createMusicNotify(musicType, responseJson);
+        String apiCode = MusicTypeEnum.MUSIC.getType().equals(musicType) ?
+                ModelType4MusicEnum.V3.getApiCode() : ModelType4MusicEnum.V3.getApiCode();
+
+        MusicCreateApi musicCreateApi = (MusicCreateApi) SpringContext.getBean(apiCode);
+        MusicCreationResultDTO resultDTO = musicCreateApi.createMusicNotify(musicType, responseJson);
+
+        if (resultDTO == null) {
+            return;
+        }
+
+        musicCreated(resultDTO);
+
+    }
+
+    /**
+     * 音乐创建完成
+     * 更新音乐信息 歌曲 歌词 音频文件
+     *
+     * @param resultDTO
+     */
+    private void musicCreated(MusicCreationResultDTO resultDTO) {
+        MusicInfo updateInfo = new MusicInfo();
+        updateInfo.setMusicTitle(resultDTO.getTitle());
+        updateInfo.setDuration(resultDTO.getDuration());
+        String lyrics = JsonUtils.convertObj2Json(resultDTO.getLyricsList());
+        updateInfo.setLyrics(lyrics);
+        updateInfo.setMusicStatus(MusicStatusEnum.CREATED.getStatus());
+        String audioUrl = resultDTO.getAudioUrl();
+        updateInfo.setAudioPath(audioUrl);
+        // 保存音频文件
+        String audioPath = fileUtils.downloadFile(audioUrl, Constants.AUDIO_SUFFIX);
+        updateInfo.setAudioPath(audioPath);
+
+        MusicInfoQuery query = new MusicInfoQuery();
+        query.setTaskId(resultDTO.getTaskId());
+
+        musicInfoMapper.updateByParam(updateInfo, query);
+    }
+
+    /**
+     * 定时任务， 自动查询未支付订单
+     */
+    @PostConstruct
+    public void getMusicFromQueue() {
+        ExecutorServiceSingletonEnum.INSTANCE.getExecutorService().execute(() -> {
+            // 查询未支付订单
+            while (true) {
+                try {
+                    Set<MusicTaskDTO> queueDataList = redisComponent.getMusicTaskDto();
+                    if (queueDataList == null || queueDataList.isEmpty()) {
+                        Thread.sleep(5000);
+                        continue;
+                    }
+                    for (MusicTaskDTO musicTaskDTO : queueDataList) {
+                        // 调用接口获取音乐信息
+                        redisComponent.removeMusicTaskDto(musicTaskDTO);
+                        getMusicInfoFromAI(musicTaskDTO);
+                    }
+                } catch (Exception e) {
+                    log.error("获取音乐信息队列失败", e);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        log.error("休眠失败", ex);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 主动轮询天谱乐
+     *
+     * @param musicTaskDTO
+     */
+    private void getMusicInfoFromAI(MusicTaskDTO musicTaskDTO) {
+        MusicCreateApi musicCreateApi = (MusicCreateApi) SpringContext.getBean(musicTaskDTO.getApiCode());
+        MusicCreationResultDTO resultDTO = null;
+        if (musicTaskDTO.getMusicType().equals(MusicTypeEnum.MUSIC.getType())) {
+            resultDTO = musicCreateApi.musicQuery(musicTaskDTO.getTaskId());
+        } else {
+            resultDTO = musicCreateApi.pureMusicQuery(musicTaskDTO.getTaskId());
+        }
+
+        // 获取失败 重新加入redis队列
+        if (resultDTO == null) {
+            redisComponent.addMusicCreateTask(musicTaskDTO);
+            return;
+        }
+        // 保存音乐信息
+        musicCreated(resultDTO);
     }
 }

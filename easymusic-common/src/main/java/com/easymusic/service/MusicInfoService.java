@@ -1,5 +1,6 @@
 package com.easymusic.service;
 
+import com.easymusic.entity.dto.MusicCreationResultDTO;
 import com.easymusic.entity.po.MusicInfo;
 import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
@@ -90,4 +91,7 @@ public interface MusicInfoService {
 	void updateMusicCount(String musicId);
 
 	void musicCreateNotify(Integer musicType, String responseJson);
+
+	 void musicCreated(MusicCreationResultDTO resultDTO);
+
 }

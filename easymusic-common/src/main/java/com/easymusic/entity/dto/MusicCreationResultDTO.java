@@ -16,6 +16,17 @@ public class MusicCreationResultDTO {
     private String audioHiUrl;
     private List<Lyrics> lyricsList;
 
+    // 是否创建成功
+    private Boolean createSuccess;
+
+    public Boolean getCreateSuccess() {
+        return createSuccess;
+    }
+
+    public void setCreateSuccess(Boolean createSuccess) {
+        this.createSuccess = createSuccess;
+    }
+
     public String getTaskId() {
         return taskId;
     }

@@ -7,14 +7,18 @@ import com.easymusic.entity.dto.MusicTaskDTO;
 import com.easymusic.entity.enums.*;
 import com.easymusic.entity.po.MusicInfo;
 import com.easymusic.entity.po.UserInfo;
+import com.easymusic.entity.po.UserIntegralRecord;
 import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.query.SimplePage;
 import com.easymusic.entity.query.UserInfoQuery;
+import com.easymusic.entity.query.UserIntegralRecordQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+import com.easymusic.exception.BusinessException;
 import com.easymusic.mappers.MusicInfoMapper;
 import com.easymusic.mappers.UserInfoMapper;
 import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.MusicInfoService;
+import com.easymusic.service.UserIntegralRecordService;
 import com.easymusic.spring.SpringContext;
 import com.easymusic.utils.FileUtils;
 import com.easymusic.utils.JsonUtils;
@@ -22,7 +26,9 @@ import com.easymusic.utils.StringTools;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -46,6 +52,13 @@ public class MusicInfoServiceImpl implements MusicInfoService {
 
     @Resource
     private RedisComponent redisComponent;
+
+    @Resource
+    private UserIntegralRecordService userIntegralRecordService;
+
+    @Resource
+    @Lazy
+    private MusicInfoService musicInfoService;
 
     /**
      * 根据条件查询列表
@@ -202,7 +215,7 @@ public class MusicInfoServiceImpl implements MusicInfoService {
             return;
         }
 
-        musicCreated(resultDTO);
+        musicInfoService.musicCreated(resultDTO);
 
     }
 
@@ -212,23 +225,51 @@ public class MusicInfoServiceImpl implements MusicInfoService {
      *
      * @param resultDTO
      */
-    private void musicCreated(MusicCreationResultDTO resultDTO) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void musicCreated(MusicCreationResultDTO resultDTO) {
         MusicInfo updateInfo = new MusicInfo();
-        updateInfo.setMusicTitle(resultDTO.getTitle());
-        updateInfo.setDuration(resultDTO.getDuration());
-        String lyrics = JsonUtils.convertObj2Json(resultDTO.getLyricsList());
-        updateInfo.setLyrics(lyrics);
-        updateInfo.setMusicStatus(MusicStatusEnum.CREATED.getStatus());
-        String audioUrl = resultDTO.getAudioUrl();
-        updateInfo.setAudioPath(audioUrl);
-        // 保存音频文件
-        String audioPath = fileUtils.downloadFile(audioUrl, Constants.AUDIO_SUFFIX);
-        updateInfo.setAudioPath(audioPath);
+
+        if (resultDTO.getCreateSuccess()) {
+            updateInfo.setMusicTitle(resultDTO.getTitle());
+            updateInfo.setDuration(resultDTO.getDuration());
+            String lyrics = JsonUtils.convertObj2Json(resultDTO.getLyricsList());
+            updateInfo.setLyrics(lyrics);
+            updateInfo.setMusicStatus(MusicStatusEnum.CREATED.getStatus());
+            String audioUrl = resultDTO.getAudioUrl();
+            updateInfo.setAudioPath(audioUrl);
+            // 保存音频文件
+            String audioPath = fileUtils.downloadFile(audioUrl, Constants.AUDIO_SUFFIX);
+            updateInfo.setAudioPath(audioPath);
+        } else {
+            // 创建失败
+            updateInfo.setMusicStatus(MusicStatusEnum.CRAETE_FAIL.getStatus());
+            // TODO 退还积分
+            MusicInfo musicInfo = musicInfoMapper.selectByTaskId(resultDTO.getTaskId());
+            if (musicInfo == null) {
+                throw new BusinessException("音乐不存在");
+            }
+
+            UserIntegralRecordQuery query = new UserIntegralRecordQuery();
+            query.setUserId(musicInfo.getUserId());
+            query.setBusinessId(musicInfo.getCreationId());
+            List<UserIntegralRecord> list = userIntegralRecordService.findListByParam(query);
+            UserIntegralRecord record = list.get(0);
+            userIntegralRecordService.changeUserIntegral(UserIntegralRecordTypeEnum.CREATE_MUSIC_BACK,
+                    musicInfo.getUserId(),
+                    musicInfo.getUserId(),
+                    -record.getChangeIntegral(),
+                    null);
+        }
 
         MusicInfoQuery query = new MusicInfoQuery();
         query.setTaskId(resultDTO.getTaskId());
+        query.setMusicStatus(MusicStatusEnum.CREATING.getStatus());
 
-        musicInfoMapper.updateByParam(updateInfo, query);
+        Integer changeCount = musicInfoMapper.updateByParam(updateInfo, query);
+        if (changeCount == 0) {
+            throw new BusinessException("更新音乐状态失败");
+        }
     }
 
     /**
@@ -282,6 +323,6 @@ public class MusicInfoServiceImpl implements MusicInfoService {
             return;
         }
         // 保存音乐信息
-        musicCreated(resultDTO);
+        musicInfoService.musicCreated(resultDTO);
     }
 }

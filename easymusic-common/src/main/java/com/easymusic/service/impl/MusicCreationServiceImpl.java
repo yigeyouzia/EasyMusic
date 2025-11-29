@@ -187,7 +187,11 @@ public class MusicCreationServiceImpl implements MusicCreationService {
         int integral = Integer.parseInt(sysDict.getDictValue()); // 积分
 
         // 扣减积分
-        userIntegralRecordService.changeUserIntegral(UserIntegralRecordTypeEnum.CREATE_MUSIC, creationId, creation.getUserId(), -integral, null);
+        userIntegralRecordService.changeUserIntegral(UserIntegralRecordTypeEnum.CREATE_MUSIC,
+                creationId,
+                creation.getUserId(),
+                -integral,
+                null);
 
         Date curDate = new Date();
         creation.setCreationId(creationId);

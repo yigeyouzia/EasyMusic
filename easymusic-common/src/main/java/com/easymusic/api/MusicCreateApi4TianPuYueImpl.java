@@ -47,6 +47,9 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
     @Resource
     private AppConfig appConfig;
 
+    // 天谱乐创建音乐成功status
+    private Integer STATUS_SUCCESS = 20000;
+
     private HashMap<String, String> getHeader() {
         HashMap<String, String> header = new HashMap<>();
         header.put("Content-Type", "application/json; charset=utf-8");
@@ -77,7 +80,15 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
      *
      * @return
      */
-    private MusicCreationResultDTO getMusicCreateResultDTO(JSONObject jsonObject, MusicTypeEnum musicTypeEnum) {
+    private MusicCreationResultDTO getMusicCreateResultDTO(Integer status, JSONObject jsonObject, MusicTypeEnum musicTypeEnum) {
+        // 创建失败
+        if (status != null && !status.equals(STATUS_SUCCESS)) {
+            MusicCreationResultDTO resultDTO = new MusicCreationResultDTO();
+            resultDTO.setTaskId(jsonObject.getString("item_id"));
+            resultDTO.setCreateSuccess(false);
+            return resultDTO;
+        }
+
         if (jsonObject == null) {
             return null;
         }
@@ -98,6 +109,7 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
         resultDTO.setAudioHiUrl(jsonObject.getString("audio_hi_url"));
         resultDTO.setDuration(jsonObject.getIntValue("duration"));
         resultDTO.setLyricsList(lyricsList);
+        resultDTO.setCreateSuccess(true);
         return resultDTO;
     }
 
@@ -114,7 +126,8 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
         log.info("请求天谱乐api查询音乐返回结果：{}", response);
         // 支取第一个
         JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.songs[0]");
-        return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.MUSIC);
+        Integer status = (Integer) JSONPath.eval(response, "$.status");
+        return getMusicCreateResultDTO(status, jsonObject, MusicTypeEnum.MUSIC);
     }
 
 
@@ -148,25 +161,29 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
         log.info("请求天谱乐api查询音乐返回结果：{}", response);
         // 支取第一个
         JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.instrumentals[0]");
-        return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.PURE);
+
+        Integer status = (Integer) JSONPath.eval(response, "$.status");
+        return getMusicCreateResultDTO(status, jsonObject, MusicTypeEnum.PURE);
     }
 
     /**
      * 天谱乐回调api实现
      *
-     * @param musicType    音乐类型
-     * @param response 返回体
+     * @param musicType 音乐类型
+     * @param response  返回体
      * @return
      */
     @Override
     public MusicCreationResultDTO createMusicNotify(Integer musicType, String response) {
         MusicTypeEnum musicTypeEnum = MusicTypeEnum.getByType(musicType);
+        Integer status = (Integer) JSONPath.eval(response, "$.status");
+
         if (MusicTypeEnum.MUSIC == musicTypeEnum) {
             JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.songs[0]");
-            return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.MUSIC);
+            return getMusicCreateResultDTO(status, jsonObject, MusicTypeEnum.MUSIC);
         } else if (MusicTypeEnum.PURE == musicTypeEnum) {
             JSONObject jsonObject = (JSONObject) JSONPath.eval(response, "$.data.instrumentals[0]");
-            return getMusicCreateResultDTO(jsonObject, MusicTypeEnum.PURE);
+            return getMusicCreateResultDTO(status, jsonObject, MusicTypeEnum.PURE);
         }
         return null;
     }

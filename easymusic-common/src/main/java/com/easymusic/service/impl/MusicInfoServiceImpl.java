@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -324,5 +325,25 @@ public class MusicInfoServiceImpl implements MusicInfoService {
         }
         // 保存音乐信息
         musicInfoService.musicCreated(resultDTO);
+    }
+
+    @Override
+    public String uploadMusicCover(MultipartFile cover, String musicId, String userId) {
+        MusicInfo musicInfo = musicInfoMapper.selectByMusicId(musicId);
+        if (musicInfo == null || !musicInfo.getUserId().equals(userId)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+
+        String suffix = StringTools.getFileSuffix(cover.getOriginalFilename());
+        String fileName = musicId + suffix;
+        String coverPath = fileUtils.uploadFile(cover, null, fileName)
+                + "&" + System.currentTimeMillis();
+
+        MusicInfo updateInfo = new MusicInfo();
+        updateInfo.setCover(coverPath);
+        musicInfoMapper.updateByMusicId(updateInfo, musicId);
+
+
+        return coverPath;
     }
 }

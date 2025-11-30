@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -156,6 +157,15 @@ public class MyController extends ABaseController {
         query.setMusicIdList(Arrays.asList(musicIds.split(",")));
 
         List<MusicInfo> res = musicInfoService.findListByParam(query);
+        return getSuccessResponseVO(res);
+    }
+
+    @RequestMapping("/uploadMusicCover")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO uploadMusicCover(@NotNull MultipartFile cover, String musicId) {
+
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        String res = musicInfoService.uploadMusicCover(cover, musicId, tokenUserInfo.getUserId());
         return getSuccessResponseVO(res);
     }
 }

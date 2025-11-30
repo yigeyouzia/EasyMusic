@@ -168,4 +168,29 @@ public class MyController extends ABaseController {
         String res = musicInfoService.uploadMusicCover(cover, musicId, tokenUserInfo.getUserId());
         return getSuccessResponseVO(res);
     }
+
+    @RequestMapping("/delMusic")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO deleteMusic(@NotEmpty String musicId) {
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        MusicInfoQuery query = new MusicInfoQuery();
+        query.setUserId(tokenUserInfo.getUserId());
+        query.setMusicId(musicId);
+        musicInfoService.deleteByParam(query);
+        return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping("/changeMusicTitle")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO changeMusicTitle(@NotEmpty String musicId,
+                                       @Size(max = 30) @NotEmpty String musicTitle) {
+        MusicInfo updateInfo = new MusicInfo();
+        updateInfo.setMusicTitle(musicTitle);
+
+        MusicInfoQuery query = new MusicInfoQuery();
+        query.setMusicId(musicId);
+        query.setUserId(getTokenUserInfo(null).getUserId());
+        musicInfoService.updateByParam(updateInfo, query);
+        return getSuccessResponseVO(null);
+    }
 }

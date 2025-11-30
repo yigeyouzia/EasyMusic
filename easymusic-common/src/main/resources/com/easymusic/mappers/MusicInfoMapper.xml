@@ -173,6 +173,9 @@
     <!-- 查询数量-->
     <select id="selectCount" resultType="java.lang.Integer">
         SELECT count(1) FROM music_info m
+        <if test="query.queryLikeMusic">
+            left join music_info_action mia on m.music_id = mia.music_id
+        </if>
         <include refid="query_condition"/>
     </select>
 

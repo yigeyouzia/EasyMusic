@@ -1,5 +1,7 @@
 package com.easymusic.entity.query;
 
+import java.util.List;
+
 /**
  * 音乐信息参数
  */
@@ -112,6 +114,17 @@ public class MusicInfoQuery extends BaseParam {
 
 	// 喜欢的用户ID
 	private String likeUserId;
+
+	// 创建音乐后前端轮询的返回
+	private List<String> musicIdList;
+
+	public List<String> getMusicIdList() {
+		return musicIdList;
+	}
+
+	public void setMusicIdList(List<String> musicIdList) {
+		this.musicIdList = musicIdList;
+	}
 
 	public String getLikeUserId() {
 		return likeUserId;

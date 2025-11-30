@@ -25,6 +25,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -111,6 +112,13 @@ public class MyController extends ABaseController {
 
     }
 
+    /**
+     * 个人我的
+     *
+     * @param pageNo
+     * @param queryLikeMusic
+     * @return
+     */
     @RequestMapping("/loadMyMusic")
     @GlobalInterceptor(checkLogin = true)
     public ResponseVO loadMusicList(Integer pageNo, Boolean queryLikeMusic) {
@@ -133,4 +141,21 @@ public class MyController extends ABaseController {
         return getSuccessResponseVO(res);
     }
 
+    /**
+     * 加载创建中的音乐
+     *
+     * @param musicIds
+     * @return
+     */
+    @RequestMapping("/loadCreatingMusic")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO loadCreatingMusic(@NotEmpty String musicIds) {
+        MusicInfoQuery query = new MusicInfoQuery();
+
+        query.setUserId(getTokenUserInfo(null).getUserId());
+        query.setMusicIdList(Arrays.asList(musicIds.split(",")));
+
+        List<MusicInfo> res = musicInfoService.findListByParam(query);
+        return getSuccessResponseVO(res);
+    }
 }

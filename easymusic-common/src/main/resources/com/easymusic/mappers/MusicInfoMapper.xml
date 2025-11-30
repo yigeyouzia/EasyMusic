@@ -128,9 +128,15 @@
             <if test="query.createTimeEnd!= null and query.createTimeEnd!=''">
                 <![CDATA[ and  m.create_time< date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
             </if>
-             <if test="query.queryLikeMusic != null and query.likeUserId != ''">
+            <if test="query.queryLikeMusic != null and query.likeUserId != ''">
                 and mia.user_id = #{query.likeUserId}
-             </if>
+            </if>
+            <if test="query.musicIdList != null and query.musicIdList.size() > 0">
+                and music_id in
+                <foreach collection="query.musicIdList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </sql>
 

@@ -3,6 +3,7 @@ package com.easymusic.service.impl;
 import com.easymusic.entity.constants.Constants;
 import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.enums.PageSize;
+import com.easymusic.entity.enums.ResponseCodeEnum;
 import com.easymusic.entity.enums.UserStatusEnum;
 import com.easymusic.entity.po.UserInfo;
 import com.easymusic.entity.query.SimplePage;
@@ -17,6 +18,7 @@ import com.easymusic.utils.FileUtils;
 import com.easymusic.utils.StringTools;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
@@ -209,5 +211,50 @@ public class UserInfoServiceImpl implements UserInfoService {
         redisComponent.saveUserTokenInfoDto(tokenUserInfoDTO);
 
         return tokenUserInfoDTO;
+    }
+
+    @Override
+    public void updatePassword(String userId, String oldPassword, String password) {
+        UserInfo userInfo = userInfoMapper.selectByUserId(userId);
+        if (userInfo == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+
+        if (!userInfo.getPassword().equals(StringTools.encodeByMD5(oldPassword))) {
+            throw new BusinessException("旧密码错误!");
+        }
+
+        UserInfo updateInfo = new UserInfo();
+        updateInfo.setPassword(StringTools.encodeByMD5(password));
+        userInfoMapper.updateByUserId(updateInfo, userInfo.getUserId());
+    }
+
+    @Override
+    public void updateUserInfo(TokenUserInfoDTO tokenUserInfoDTO, MultipartFile avatar, String nickName) {
+        UserInfo updaterInfo = new UserInfo();
+        // 拷贝头像
+        if (avatar != null) {
+            String suffix = StringTools.getFileSuffix(avatar.getOriginalFilename());
+            String fileName = tokenUserInfoDTO.getUserId() + suffix;
+            String avatarPath = fileUtils.uploadFile(avatar, Constants.FILE_FOLDER_AVATAR_NAME, fileName);
+            updaterInfo.setAvatar(avatarPath + "&" + System.currentTimeMillis());
+        }
+        updaterInfo.setNickName(nickName);
+        userInfoMapper.updateByUserId(updaterInfo, tokenUserInfoDTO.getUserId());
+
+        // 更新tokenUserInfoDTO
+        boolean updateToken = false;
+        if(!tokenUserInfoDTO.getNickName().equals(nickName)) {
+            updateToken = true;
+            tokenUserInfoDTO.setNickName(nickName);
+        }
+        if(!tokenUserInfoDTO.getAvatar().equals(updaterInfo.getAvatar())) {
+            updateToken = true;
+            tokenUserInfoDTO.setAvatar(updaterInfo.getAvatar());
+        }
+        if(!updateToken) {
+            return;
+        }
+        redisComponent.saveUserTokenInfoDto(tokenUserInfoDTO);
     }
 }

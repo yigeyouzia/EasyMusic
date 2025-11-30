@@ -4,6 +4,7 @@ import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.po.UserInfo;
 import com.easymusic.entity.query.UserInfoQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -91,4 +92,8 @@ public interface UserInfoService {
 	void register(String email, String password, String nickName);
 
     TokenUserInfoDTO login(String email, String password);
+
+    void updatePassword(String userId, String oldPassword, String password);
+
+	void updateUserInfo(TokenUserInfoDTO tokenUserInfoDTO, MultipartFile avatar, String nickName);
 }

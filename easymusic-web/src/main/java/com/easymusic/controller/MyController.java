@@ -4,13 +4,16 @@ import com.easymusic.annotation.GlobalInterceptor;
 import com.easymusic.entity.dto.MusicSettingDTO;
 import com.easymusic.entity.dto.TokenUserInfoDTO;
 import com.easymusic.entity.po.MusicCreation;
+import com.easymusic.entity.po.MusicInfo;
 import com.easymusic.entity.po.SysDict;
 import com.easymusic.entity.po.UserIntegralRecord;
+import com.easymusic.entity.query.MusicInfoQuery;
 import com.easymusic.entity.query.UserIntegralRecordQuery;
 import com.easymusic.entity.vo.PaginationResultVO;
 import com.easymusic.entity.vo.ResponseVO;
 import com.easymusic.redis.RedisComponent;
 import com.easymusic.service.MusicCreationService;
+import com.easymusic.service.MusicInfoService;
 import com.easymusic.service.SysDictService;
 import com.easymusic.service.UserIntegralRecordService;
 import jakarta.annotation.Resource;
@@ -27,6 +30,7 @@ import java.util.Map;
 
 /**
  * 我的页面控制器
+ *
  * @author cyt
  * * @date 2025/11/23 16:57:34
  */
@@ -52,6 +56,10 @@ public class MyController extends ABaseController {
 
     @Resource
     private MusicCreationService musicCreationService;
+
+
+    @Resource
+    private MusicInfoService musicInfoService;
 
     @RequestMapping("/integralRecords")
     @GlobalInterceptor(checkLogin = true)
@@ -85,7 +93,7 @@ public class MyController extends ABaseController {
         TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
         MusicCreation creation = new MusicCreation();
         creation.setUserId(tokenUserInfo.getUserId());
-        creation.setModeType(musicType);
+        creation.setMusicType(musicType);
         creation.setLyrics(lyrics);
         creation.setPrompt(prompt);
         creation.setModel(model);
@@ -99,8 +107,30 @@ public class MyController extends ABaseController {
 
         List<String> musicList = musicCreationService.createMusic(creation, musicSettingDTO);
 
-        return getSuccessResponseVO(creation);
+        return getSuccessResponseVO(musicList);
 
+    }
+
+    @RequestMapping("/loadMyMusic")
+    @GlobalInterceptor(checkLogin = true)
+    public ResponseVO loadMusicList(Integer pageNo, Boolean queryLikeMusic) {
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        if (tokenUserInfo == null) {
+            return getSuccessResponseVO(new PaginationResultVO<>());
+        }
+
+        MusicInfoQuery query = new MusicInfoQuery();
+        query.setPageNo(pageNo);
+        query.setOrderBy("create_time desc");
+        if (queryLikeMusic != null && queryLikeMusic) {
+            query.setQueryLikeMusic(true);
+            query.setLikeUserId(tokenUserInfo.getUserId());
+        } else {
+            query.setUserId(tokenUserInfo.getUserId());
+        }
+
+        PaginationResultVO<MusicInfo> res = musicInfoService.findListByPage(query);
+        return getSuccessResponseVO(res);
     }
 
 }

@@ -48,12 +48,14 @@ public class MusicCreateApi4TianPuYueImpl implements MusicCreateApi {
     private AppConfig appConfig;
 
     // 天谱乐创建音乐成功status
-    private Integer STATUS_SUCCESS = 20000;
+    private Integer STATUS_SUCCESS = 200000;
 
     private HashMap<String, String> getHeader() {
         HashMap<String, String> header = new HashMap<>();
         header.put("Content-Type", "application/json; charset=utf-8");
         header.put("Authorization", appConfig.getTianpuyueApiKey());
+        // 老罗的api需要加上这个header
+        header.put("courseOrderId", appConfig.getCourseOrderId());
         return header;
     }
 

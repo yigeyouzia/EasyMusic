@@ -107,6 +107,28 @@ public class MusicInfoQuery extends BaseParam {
 	// 当前用户ID 是否点过赞
 	private String currentUserId;
 
+	// 是否查询喜欢的音乐
+	private Boolean queryLikeMusic;
+
+	// 喜欢的用户ID
+	private String likeUserId;
+
+	public String getLikeUserId() {
+		return likeUserId;
+	}
+
+	public void setLikeUserId(String likeUserId) {
+		this.likeUserId = likeUserId;
+	}
+
+	public Boolean getQueryLikeMusic() {
+		return queryLikeMusic;
+	}
+
+	public void setQueryLikeMusic(Boolean queryLikeMusic) {
+		this.queryLikeMusic = queryLikeMusic;
+	}
+
 	public String getCurrentUserId() {
 		return currentUserId;
 	}

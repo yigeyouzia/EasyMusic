@@ -251,6 +251,8 @@ public class MusicCreationServiceImpl implements MusicCreationService {
             musicInfo.setCommendType(CommendTypeEnum.NOT_COMMEND.getStatus());
             musicInfo.setMusicStatus(MusicStatusEnum.CREATING.getStatus());
             musicInfo.setTaskId(item);
+            musicInfo.setMusicType(musicTypeEnum.getType());
+            musicInfo.setCreateTime(curDate);
             musicInfoList.add(musicInfo);
             musicIdList.add(musicInfo.getMusicId());
 

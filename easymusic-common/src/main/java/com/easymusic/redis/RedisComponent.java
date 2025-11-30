@@ -109,7 +109,8 @@ public class RedisComponent {
      * 延时队列
      */
     public void addMusicCreateTask(MusicTaskDTO musicTaskDto) {
-        long executeTime = System.currentTimeMillis() + 30 * 1000;
+        // TODO 音乐延时
+        long executeTime = System.currentTimeMillis() + 3 * 1000;
         redisUtils.zsetAdd(Constants.REDIS_KEY_MUSIC_CREATE_QUEUE, musicTaskDto, executeTime);
     }
 

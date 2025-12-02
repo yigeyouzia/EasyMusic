@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 用户信息 Controller
@@ -93,7 +94,7 @@ public class AccountController extends ABaseController {
     @RequestMapping("/getLoginInfo")
     public ResponseVO getLoginInfo() {
         TokenUserInfoDTO res = getTokenUserInfo(null);
-        if(res == null) {
+        if (res == null) {
             return getSuccessResponseVO(null);
         }
         redisComponent.saveUserTokenInfoDto(res);
@@ -106,10 +107,24 @@ public class AccountController extends ABaseController {
     public ResponseVO logout() {
         TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
         if (tokenUserInfo == null) {
-            return  getSuccessResponseVO(null);
+            return getSuccessResponseVO(null);
         }
         redisComponent.cleanTokenUserInfo4Web(tokenUserInfo.getToken());
         return getSuccessResponseVO(null);
     }
 
+    @RequestMapping("/updatePassword")
+    public ResponseVO updatePassword(@NotEmpty String oldPassword, @NotEmpty String password) {
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        userInfoService.updatePassword(tokenUserInfo.getUserId(), oldPassword, password);
+        return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping("/updateUserInfo")
+    public ResponseVO updateUserInfo(MultipartFile avatar,
+                                     @Size(max = 20) @NotEmpty String nickName) {
+        TokenUserInfoDTO tokenUserInfo = getTokenUserInfo(null);
+        userInfoService.updateUserInfo(tokenUserInfo, avatar, nickName);
+        return getSuccessResponseVO(tokenUserInfo);
+    }
 }
